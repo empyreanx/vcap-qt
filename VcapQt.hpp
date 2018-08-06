@@ -1,0 +1,91 @@
+/*
+    Copyright (c) 2015 James McLean
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+*/
+
+#ifndef VCAP_HPP
+#define VCAP_HPP
+
+#include <cstdint>
+#include <vector>
+
+#include <QCheckBox>
+#include <QDebug>
+#include <QMainWindow>
+#include <QMessageBox>
+#include <QString>
+#include <QThread>
+
+#include <vcap/vcap.h>
+
+#include "BooleanControl.hpp"
+#include "ButtonControl.hpp"
+#include "ControlWrapper.hpp"
+#include "IntegerControl.hpp"
+#include "IntegerMenuControl.hpp"
+#include "MenuControl.hpp"
+
+#include "Utils.hpp"
+
+namespace Ui {
+    class VcapQt;
+}
+
+class VcapQt : public QMainWindow {
+    Q_OBJECT
+    
+public:
+    explicit VcapQt(QWidget *parent = nullptr);
+    ~VcapQt();
+
+private slots:
+    void controlChanged();
+    void startCapture();
+    void stopCapture();
+    void quit();
+
+    void switchCamera(const QString &device);
+    void switchSize(const QString &sizeStr);
+    void switchRate(const QString &rateStr);
+
+private:
+    void addControls();
+    void removeControls();
+
+    void addSizes();
+    void removeSizes();
+
+    void addFrameRates();
+    void removeFrameRates();
+
+protected:
+    void timerEvent(QTimerEvent* timerEvent);
+
+private:
+    Ui::VcapQt* ui;
+
+    int timerId_;
+    bool capturing_;
+
+    vcap_device device_;
+    vcap_fg* fg_;
+    vcap_frame* frame_;
+    vcap_rate frameRate_;
+    vcap_size frameSize_;
+
+    std::vector<vcap_device> devices_;
+    std::vector<std::unique_ptr<ControlWrapper>> controls_;
+
+    void displayImage(int width, int height, unsigned char *data);
+};
+
+#endif // VCAP_HPP
