@@ -1,8 +1,8 @@
 # Vcap Qt Demo
 
 ## Introduction
-A demo of the C++ bindings for [Vcap](https://github.com/jrimclean/vcap-cpp) using Qt4.
+A demo of [Vcap](https://github.com/jrimclean/vcap) written in C++11/Qt5.
 
 ## License
-Copyright (c) 2015 James McLean  
+Copyright (c) 2018 James McLean  
 Licensed under the GPLv3.
