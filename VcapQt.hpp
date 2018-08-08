@@ -51,6 +51,8 @@ private slots:
     void controlChanged();
     void startCapture();
     void stopCapture();
+    void importSettings();
+    void exportSettings();
     void quit();
 
     void switchCamera(const QString &device);

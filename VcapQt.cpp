@@ -17,6 +17,8 @@
 
 #include <vcap/vcap.h>
 
+#include <QFileDialog>
+
 VcapQt::VcapQt(QWidget *parent) : QMainWindow(parent), ui(new Ui::VcapQt) {
     ui->setupUi(this);
 
@@ -52,8 +54,10 @@ VcapQt::VcapQt(QWidget *parent) : QMainWindow(parent), ui(new Ui::VcapQt) {
 
     device_ = devices_[0];
 
-    connect(ui->actionStart_Capture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
-    connect(ui->actionStop_Capture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
+    connect(ui->actionStartCapture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
+    connect(ui->actionStopCapture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
+    connect(ui->actionImportSettings, SIGNAL(triggered(bool)), this, SLOT(importSettings()));
+    connect(ui->actionExportSettings, SIGNAL(triggered(bool)), this, SLOT(exportSettings()));
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(quit()));
     connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchCamera(QString)));
     connect(ui->sizeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchSize(QString)));
@@ -117,6 +121,42 @@ void VcapQt::stopCapture() {
         removeControls();
         removeSizes();
         removeFrameRates();
+    }
+}
+
+void VcapQt::importSettings() {
+    if (capturing_) {
+        QString fileName = QFileDialog::getOpenFileName(this,
+                                                        "Import Settings",
+                                                        QDir::currentPath(),
+                                                        "JSON (*.json)",
+                                                        nullptr,
+                                                        QFileDialog::DontUseNativeDialog);
+        if (!fileName.isNull()) {
+            if (vcap_import_settings(fg_, fileName.toLatin1().data()) == -1) {
+                std::cerr << vcap_get_error() << std::endl;
+            } else {
+                updateControls();
+                updateSize();
+                updateFrameRate();
+            }
+        }
+    }
+}
+
+void VcapQt::exportSettings() {
+    if (capturing_) {
+        QString fileName = QFileDialog::getSaveFileName(this,
+                                                        "Export Settings",
+                                                        QDir::currentPath(),
+                                                        "JSON (*.json)",
+                                                        nullptr,
+                                                        QFileDialog::DontUseNativeDialog);
+        if (!fileName.isNull()) {
+            if (vcap_export_settings(fg_, fileName.toLatin1().data()) == -1) {
+                std::cerr << vcap_get_error() << std::endl;
+            }
+        }
     }
 }
 
