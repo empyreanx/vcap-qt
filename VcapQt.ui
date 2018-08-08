@@ -125,6 +125,62 @@
           <item row="2" column="1">
            <widget class="QComboBox" name="frameRateComboBox"/>
           </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="resetLabel">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Reset Ctrls</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="resetButton">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="snapshotLabel">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Snapshot</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="snapshotButton">
+            <property name="text">
+             <string>Snapshot</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="delayLabel">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Delay</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QSpinBox" name="delaySpinBox"/>
+          </item>
          </layout>
         </item>
         <item>
@@ -162,6 +218,9 @@
     <addaction name="actionStart_Capture"/>
     <addaction name="actionStop_Capture"/>
     <addaction name="separator"/>
+    <addaction name="actionImportSettings"/>
+    <addaction name="actionExportSettings"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -179,6 +238,16 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionImportSettings">
+   <property name="text">
+    <string>Import Settings</string>
+   </property>
+  </action>
+  <action name="actionExportSettings">
+   <property name="text">
+    <string>Export Settings</string>
    </property>
   </action>
  </widget>

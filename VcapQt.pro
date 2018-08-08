@@ -13,7 +13,7 @@ TEMPLATE = app
 
 QMAKE_CXXFLAGS += -std=c++11
 
-LIBS += -L /usr/lib/libv4l2 -L/usr/local/lib -lvcap -lv4l2
+LIBS += -L /usr/lib/libv4l2 -L/usr/local/lib -lvcap -lv4l2 -lpng -ljpeg -ljansson
 
 SOURCES += Main.cpp Utils.cpp \
     ControlWrapper.cpp \

@@ -25,7 +25,7 @@ IntegerMenuControl::IntegerMenuControl(vcap_fg* fg, vcap_ctrl_desc desc) : Contr
         comboBox_.addItem(QString::number(item.value));
     }
 
-    vcap_free_menu_itr(itr);
+    vcap_free(itr);
 
     connect(&comboBox_, SIGNAL(currentIndexChanged(int)), this, SLOT(setValue(int)));
 }

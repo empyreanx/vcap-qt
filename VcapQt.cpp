@@ -83,7 +83,7 @@ void VcapQt::startCapture() {
             QApplication::quit();
         }
 
-        vcap_free_size_itr(itr);
+        vcap_free(itr);
 
         if (vcap_set_fmt(fg_, VCAP_FMT_RGB24, frameSize_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -241,7 +241,7 @@ void VcapQt::addControls() {
         connect(controls_.back().get(), SIGNAL(changed()), this, SLOT(controlChanged()));
     }
 
-    vcap_free_ctrl_itr(itr);
+    vcap_free(itr);
 
     for (unsigned i = 0; i < controls_.size(); i++) {
         controls_[i]->checkStatus();
@@ -275,7 +275,7 @@ void VcapQt::addSizes() {
         ui->sizeComboBox->addItem(sizeStr);
     }
 
-    vcap_free_size_itr(itr);
+    vcap_free(itr);
 
     vcap_fmt_id id;
     vcap_get_fmt(fg_, &id, &size);
@@ -304,7 +304,7 @@ void VcapQt::addFrameRates() {
         ui->frameRateComboBox->addItem(QString::number(rate.numerator) + "/" + QString::number(rate.denominator));
     }
 
-    vcap_free_rate_itr(itr);
+    vcap_free(itr);
 
     vcap_get_rate(fg_, &frameRate_);
     QString frameRateStr = QString::number(frameRate_.numerator) + "/" + QString::number(frameRate_.denominator);

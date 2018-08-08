@@ -25,7 +25,7 @@ MenuControl::MenuControl(vcap_fg* fg, vcap_ctrl_desc desc) : ControlWrapper(fg, 
         comboBox_.addItem(reinterpret_cast<char*>(item.name));
     }
 
-    vcap_free_menu_itr(itr);
+    vcap_free(itr);
 
     connect(&comboBox_, SIGNAL(currentIndexChanged(int)), this, SLOT(setValue(int)));
 }
