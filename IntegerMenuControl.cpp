@@ -27,23 +27,31 @@ IntegerMenuControl::IntegerMenuControl(vcap_fg* fg, vcap_ctrl_desc desc) : Contr
 
     vcap_free(itr);
 
+    update();
+
     connect(&comboBox_, SIGNAL(currentIndexChanged(int)), this, SLOT(setValue(int)));
 }
 
-void IntegerMenuControl::checkStatus() {
+void IntegerMenuControl::check() {
     int status = vcap_ctrl_status(fg_, desc_.id);
     bool enabled = comboBox_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
-        if (!enabled) {
-            int32_t index;
-            vcap_get_ctrl(fg_, desc_.id, &index);
-            comboBox_.setCurrentIndex(index);
-        }
+        if (!enabled)
+            update();
 
         comboBox_.setDisabled(false);
     }
 
     if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_INACTIVE)
         comboBox_.setDisabled(true);
+}
+
+void IntegerMenuControl::update() {
+    int32_t value;
+
+    if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
+        std::cout << std::string(vcap_get_error()) << std::endl;
+
+    comboBox_.setCurrentIndex(value);
 }

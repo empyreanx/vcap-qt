@@ -35,7 +35,8 @@ public:
         return &checkBox_;
     }
 
-    virtual void checkStatus();
+    void check();
+    void update();
 
 private slots:
     void setValue(bool value);

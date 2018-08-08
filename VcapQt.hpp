@@ -60,12 +60,16 @@ private slots:
 private:
     void addControls();
     void removeControls();
+    void checkControls();
+    void updateControls();
 
     void addSizes();
     void removeSizes();
+    void updateSize();
 
     void addFrameRates();
     void removeFrameRates();
+    void updateFrameRate();
 
 protected:
     void timerEvent(QTimerEvent* timerEvent);

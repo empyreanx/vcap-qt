@@ -30,7 +30,8 @@ public:
     explicit ControlWrapper(vcap_fg* fg, vcap_ctrl_desc desc);
     virtual ~ControlWrapper() {}
 
-    virtual void checkStatus() = 0;
+    virtual void check() = 0;
+    virtual void update() = 0;
 
     virtual QWidget* widget() = 0;
 

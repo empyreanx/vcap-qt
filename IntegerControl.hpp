@@ -33,7 +33,8 @@ public:
         return &slider_;
     }
 
-    virtual void checkStatus();
+    void check();
+    void update();
 
 private:
     QSlider slider_;

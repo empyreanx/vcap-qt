@@ -15,33 +15,35 @@
 #include "IntegerControl.hpp"
 
 IntegerControl::IntegerControl(vcap_fg* fg, vcap_ctrl_desc desc) : ControlWrapper(fg, desc), slider_(Qt::Horizontal) {
-    int32_t value;
-
-    if (vcap_get_ctrl(fg, desc.id, &value) == -1)
-        std::cout << std::string(vcap_get_error()) << std::endl;
-
     slider_.setMinimum(desc.min);
     slider_.setMaximum(desc.max);
     slider_.setTickInterval(desc.step);
-    slider_.setValue(value);
+
+    update();
 
     connect(&slider_, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)));
 }
 
-void IntegerControl::checkStatus() {
+void IntegerControl::check() {
     int status = vcap_ctrl_status(fg_, desc_.id);
     bool enabled = slider_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
-        if (!enabled) {
-            int32_t value;
-            vcap_get_ctrl(fg_, desc_.id, &value);
-            slider_.setValue(value);
-        }
+        if (!enabled)
+            update();
 
         slider_.setDisabled(false);
     }
 
     if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_INACTIVE)
         slider_.setDisabled(true);
+}
+
+void IntegerControl::update() {
+    int32_t value;
+
+    if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
+        std::cout << std::string(vcap_get_error()) << std::endl;
+
+    slider_.setValue(value);
 }

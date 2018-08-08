@@ -32,7 +32,8 @@ public:
         return &comboBox_;
     }
 
-    virtual void checkStatus();
+    void check();
+    void update();
 
 private:
     QComboBox comboBox_;

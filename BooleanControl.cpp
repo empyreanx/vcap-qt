@@ -15,13 +15,7 @@
 #include "BooleanControl.hpp"
 
 BooleanControl::BooleanControl(vcap_fg* fg, vcap_ctrl_desc desc) : ControlWrapper(fg, desc) {
-    int32_t value;
-
-    if (vcap_get_ctrl(fg, desc.id, &value) == -1)
-        std::cout << std::string(vcap_get_error()) << std::endl;
-
-    checkBox_.setChecked(!!value);
-
+    update();
     connect(&checkBox_, SIGNAL(clicked(bool)), this, SLOT(setValue(bool)));
 }
 
@@ -33,20 +27,26 @@ void BooleanControl::setValue(bool value) {
     }
 }
 
-void BooleanControl::checkStatus() {
+void BooleanControl::check() {
     int status = vcap_ctrl_status(fg_, desc_.id);
     bool enabled = checkBox_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
-        if (!enabled) {
-            int32_t checked;
-            vcap_get_ctrl(fg_, desc_.id, &checked);
-            checkBox_.setChecked(!!checked);
-        }
+        if (!enabled)
+            update();
 
         checkBox_.setDisabled(false);
     }
 
     if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_INACTIVE)
         checkBox_.setDisabled(true);
+}
+
+void BooleanControl::update() {
+    int32_t value;
+
+    if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
+        std::cout << std::string(vcap_get_error()) << std::endl;
+
+    checkBox_.setChecked(!!value);
 }

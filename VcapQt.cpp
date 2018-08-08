@@ -244,14 +244,12 @@ void VcapQt::addControls() {
     vcap_free(itr);
 
     for (unsigned i = 0; i < controls_.size(); i++) {
-        controls_[i]->checkStatus();
+        controls_[i]->check();
     }
 }
 
 void VcapQt::controlChanged() {
-    for (unsigned i = 0; i < controls_.size(); i++) {
-        controls_[i]->checkStatus();
-    }
+    checkControls();
 }
 
 void VcapQt::removeControls() {
@@ -266,6 +264,18 @@ void VcapQt::removeControls() {
     }
 }
 
+void VcapQt::checkControls() {
+    for (unsigned i = 0; i < controls_.size(); i++) {
+        controls_[i]->check();
+    }
+}
+
+void VcapQt::updateControls() {
+    for (unsigned i = 0; i < controls_.size(); i++) {
+        controls_[i]->update();
+    }
+}
+
 void VcapQt::addSizes() {
     vcap_size size;
     vcap_size_itr* itr = vcap_new_size_itr(fg_, VCAP_FMT_RGB24);
@@ -277,22 +287,26 @@ void VcapQt::addSizes() {
 
     vcap_free(itr);
 
+    updateSize();
+}
+
+void VcapQt::removeSizes() {
+    while (ui->sizeComboBox->count() > 0) {
+        ui->sizeComboBox->removeItem(0);
+    }
+}
+
+void VcapQt::updateSize() {
     vcap_fmt_id id;
-    vcap_get_fmt(fg_, &id, &size);
-    \
-    QString sizeStr = QString::number(size.width) + "x" + QString::number(size.height);
+    vcap_get_fmt(fg_, &id, &frameSize_);
+
+    QString sizeStr = QString::number(frameSize_.width) + "x" + QString::number(frameSize_.height);
 
     for (int i = 0; i < ui->sizeComboBox->count(); i++) {
         if (ui->sizeComboBox->itemText(i) == sizeStr) {
             ui->sizeComboBox->setCurrentIndex(i);
             break;
         }
-    }
-}
-
-void VcapQt::removeSizes() {
-    while (ui->sizeComboBox->count() > 0) {
-        ui->sizeComboBox->removeItem(0);
     }
 }
 
@@ -306,6 +320,16 @@ void VcapQt::addFrameRates() {
 
     vcap_free(itr);
 
+    updateFrameRate();
+}
+
+void VcapQt::removeFrameRates() {
+    while (ui->frameRateComboBox->count() > 0) {
+        ui->frameRateComboBox->removeItem(0);
+    }
+}
+
+void VcapQt::updateFrameRate() {
     vcap_get_rate(fg_, &frameRate_);
     QString frameRateStr = QString::number(frameRate_.numerator) + "/" + QString::number(frameRate_.denominator);
 
@@ -314,12 +338,6 @@ void VcapQt::addFrameRates() {
             ui->sizeComboBox->setCurrentIndex(i);
             break;
         }
-    }
-}
-
-void VcapQt::removeFrameRates() {
-    while (ui->frameRateComboBox->count() > 0) {
-        ui->frameRateComboBox->removeItem(0);
     }
 }
 

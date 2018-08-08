@@ -35,7 +35,8 @@ public:
         return &button_;
     }
 
-    virtual void checkStatus();
+    void check();
+    void update();
 
 private slots:
     void push();
