@@ -140,6 +140,7 @@ void VcapQt::importSettings() {
                 updateControls();
                 updateSize();
                 updateFrameRate();
+                checkControls();
             }
         }
     }
