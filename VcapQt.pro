@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = vcap-qt
 TEMPLATE = app
 
-QMAKE_CXXFLAGS += -std=c++11 -DVCAP_SUPPORT_JSON
+QMAKE_CXXFLAGS += -std=c++11 -DVCAP_SUPPORT_JSON -DVCAP_SUPPORT_PNG -DVCAP_SUPPORT_JPEG
 
 LIBS += -L /usr/lib/libv4l2 -L/usr/local/lib -lvcap -lv4l2 -lpng -ljpeg -ljansson
 

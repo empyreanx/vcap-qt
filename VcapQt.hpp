@@ -60,27 +60,31 @@ private slots:
     void switchSize(const QString &sizeStr);
     void switchRate(const QString &rateStr);
 
+    void snapshot();
+
 private:
     void addControls();
     void removeControls();
     void checkControls();
     void updateControls();
 
-    void addSizes();
-    void removeSizes();
-    void updateSize();
+    void addFrameSizes();
+    void removeFrameSizes();
+    void updateFrameSize();
 
     void addFrameRates();
     void removeFrameRates();
     void updateFrameRate();
 
 protected:
-    void timerEvent(QTimerEvent* timerEvent);
+    void timerEvent(QTimerEvent* event);
 
 private:
     Ui::VcapQt* ui;
 
-    int timerId_;
+    int captureTimer_;
+    int snapshotTimer_;
+
     bool capturing_;
 
     vcap_device device_;

@@ -63,6 +63,7 @@ VcapQt::VcapQt(QWidget *parent) : QMainWindow(parent), ui(new Ui::VcapQt) {
     connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchCamera(QString)));
     connect(ui->sizeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchSize(QString)));
     connect(ui->frameRateComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchRate(QString)));
+    connect(ui->snapshotButton, SIGNAL(clicked()), this, SLOT(snapshot()));
 }
 
 VcapQt::~VcapQt() {
@@ -103,10 +104,10 @@ void VcapQt::startCapture() {
         }
 
         addControls();
-        addSizes();
+        addFrameSizes();
         addFrameRates();
 
-        timerId_ = startTimer(0);
+        captureTimer_ = startTimer(0);
         capturing_ = true;
     }
 }
@@ -114,13 +115,13 @@ void VcapQt::startCapture() {
 void VcapQt::stopCapture() {
     if (capturing_) {
         capturing_ = false;
-        killTimer(timerId_);
+        killTimer(captureTimer_);
 
         vcap_free_frame(frame_);
         vcap_close(fg_);
 
         removeControls();
-        removeSizes();
+        removeFrameSizes();
         removeFrameRates();
     }
 }
@@ -138,7 +139,7 @@ void VcapQt::importSettings() {
                 std::cerr << vcap_get_error() << std::endl;
             } else {
                 updateControls();
-                updateSize();
+                updateFrameSize();
                 updateFrameRate();
                 checkControls();
             }
@@ -176,14 +177,38 @@ void VcapQt::resetControls() {
     checkControls();
 }
 
-void VcapQt::timerEvent(QTimerEvent*) {
+void VcapQt::snapshot() {
+    if (capturing_)
+        snapshotTimer_ = startTimer(ui->delaySpinBox->value() * 1000);
+}
+
+void VcapQt::timerEvent(QTimerEvent* event) {
     if (capturing_) {
         if (vcap_grab(fg_, frame_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
             QApplication::quit();
         }
 
-        displayImage(static_cast<int>(frame_->size.width), static_cast<int>(frame_->size.height), frame_->data);
+        if (event->timerId() == snapshotTimer_) {
+            QString fileName = QFileDialog::getSaveFileName(this,
+                                                            "Save Image",
+                                                            QDir::currentPath(),
+                                                            "Images (*.png *.jpg)",
+                                                            nullptr,
+                                                            QFileDialog::DontUseNativeDialog);
+
+            if (!fileName.isNull()) {
+                if (ui->formatComboBox->currentText() == "PNG") {
+                    vcap_save_png(frame_, fileName.toLatin1().data());
+                } else {
+                    vcap_save_jpeg(frame_, fileName.toLatin1().data());
+                }
+            }
+
+            killTimer(snapshotTimer_);
+        } else {
+            displayImage(static_cast<int>(frame_->size.width), static_cast<int>(frame_->size.height), frame_->data);
+        }
     }
 }
 
@@ -207,7 +232,7 @@ void VcapQt::switchCamera(const QString &device) {
 void VcapQt::switchSize(const QString &sizeStr) {
     if (capturing_) {
         capturing_ = false;
-        killTimer(timerId_);
+        killTimer(captureTimer_);
 
         QStringList parts = sizeStr.split("x");
 
@@ -229,7 +254,7 @@ void VcapQt::switchSize(const QString &sizeStr) {
         removeFrameRates();
         addFrameRates();
 
-        timerId_ = startTimer(0);
+        captureTimer_ = startTimer(0);
         capturing_ = true;
     }
 }
@@ -237,7 +262,7 @@ void VcapQt::switchSize(const QString &sizeStr) {
 void VcapQt::switchRate(const QString &rateStr) {
     if (capturing_) {
         capturing_ = false;
-        killTimer(timerId_);
+        killTimer(captureTimer_);
 
         QStringList parts = rateStr.split("/");
 
@@ -253,7 +278,7 @@ void VcapQt::switchRate(const QString &rateStr) {
 
         frameRate_ = rate;
 
-        timerId_ = startTimer(0);
+        captureTimer_ = startTimer(0);
         capturing_ = true;
     }
 }
@@ -327,7 +352,7 @@ void VcapQt::updateControls() {
     }
 }
 
-void VcapQt::addSizes() {
+void VcapQt::addFrameSizes() {
     vcap_size size;
     vcap_size_itr* itr = vcap_new_size_itr(fg_, VCAP_FMT_RGB24);
 
@@ -338,16 +363,16 @@ void VcapQt::addSizes() {
 
     vcap_free(itr);
 
-    updateSize();
+    updateFrameSize();
 }
 
-void VcapQt::removeSizes() {
+void VcapQt::removeFrameSizes() {
     while (ui->sizeComboBox->count() > 0) {
         ui->sizeComboBox->removeItem(0);
     }
 }
 
-void VcapQt::updateSize() {
+void VcapQt::updateFrameSize() {
     vcap_fmt_id id;
     vcap_get_fmt(fg_, &id, &frameSize_);
 
