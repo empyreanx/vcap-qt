@@ -45,5 +45,7 @@ void IntegerControl::update() {
     if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
         std::cout << std::string(vcap_get_error()) << std::endl;
 
+    slider_.blockSignals(true);
     slider_.setValue(value);
+    slider_.blockSignals(false);
 }

@@ -48,5 +48,7 @@ void BooleanControl::update() {
     if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
         std::cout << std::string(vcap_get_error()) << std::endl;
 
+    checkBox_.blockSignals(true);
     checkBox_.setChecked(!!value);
+    checkBox_.blockSignals(false);
 }

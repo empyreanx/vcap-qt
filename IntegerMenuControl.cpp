@@ -53,5 +53,7 @@ void IntegerMenuControl::update() {
     if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
         std::cout << std::string(vcap_get_error()) << std::endl;
 
+    comboBox_.blockSignals(true);
     comboBox_.setCurrentIndex(value);
+    comboBox_.blockSignals(false);
 }

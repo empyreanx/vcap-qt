@@ -55,6 +55,7 @@ private slots:
     void exportSettings();
     void quit();
 
+    void resetControls();
     void switchCamera(const QString &device);
     void switchSize(const QString &sizeStr);
     void switchRate(const QString &rateStr);

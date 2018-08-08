@@ -59,6 +59,7 @@ VcapQt::VcapQt(QWidget *parent) : QMainWindow(parent), ui(new Ui::VcapQt) {
     connect(ui->actionImportSettings, SIGNAL(triggered(bool)), this, SLOT(importSettings()));
     connect(ui->actionExportSettings, SIGNAL(triggered(bool)), this, SLOT(exportSettings()));
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(quit()));
+    connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(resetControls()));
     connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchCamera(QString)));
     connect(ui->sizeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchSize(QString)));
     connect(ui->frameRateComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchRate(QString)));
@@ -163,6 +164,15 @@ void VcapQt::exportSettings() {
 void VcapQt::quit() {
     stopCapture();
     QCoreApplication::quit();
+}
+
+void VcapQt::resetControls() {
+    if (vcap_reset_all_ctrls(fg_) == -1) {
+        std::cerr << vcap_get_error() << std::endl;
+    }
+
+    updateControls();
+    checkControls();
 }
 
 void VcapQt::timerEvent(QTimerEvent*) {
