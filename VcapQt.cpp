@@ -333,7 +333,7 @@ void VcapQt::removeControls() {
 
     QLayoutItem* item = nullptr;
 
-    while ((item = ui->controlsForm->itemAt(6)) != nullptr) {
+    while ((item = ui->controlsForm->itemAt(14)) != nullptr) {
         if (item->widget()) {
             delete item->widget();
         }
