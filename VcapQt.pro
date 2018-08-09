@@ -34,5 +34,5 @@ HEADERS  += Utils.hpp \
     MainWindow.hpp
 
 FORMS    += \
-    VcapQt.ui
+    MainWindow.ui
 

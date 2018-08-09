@@ -13,7 +13,7 @@
 */
 
 #include "MainWindow.hpp"
-#include "ui_VcapQt.h"
+#include "ui_MainWindow.h"
 
 #include <vcap/vcap.h>
 
