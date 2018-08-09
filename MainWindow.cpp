@@ -12,14 +12,14 @@
     GNU General Public License for more details.
 */
 
-#include "VcapQt.hpp"
+#include "MainWindow.hpp"
 #include "ui_VcapQt.h"
 
 #include <vcap/vcap.h>
 
 #include <QFileDialog>
 
-VcapQt::VcapQt(QWidget *parent) : QMainWindow(parent), ui(new Ui::VcapQt) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
     capturing_ = false;
@@ -66,14 +66,14 @@ VcapQt::VcapQt(QWidget *parent) : QMainWindow(parent), ui(new Ui::VcapQt) {
     connect(ui->snapshotButton, SIGNAL(clicked()), this, SLOT(snapshot()));
 }
 
-VcapQt::~VcapQt() {
+MainWindow::~MainWindow() {
     if (capturing_)
         stopCapture();
 
     delete ui;
 }
 
-void VcapQt::startCapture() {
+void MainWindow::startCapture() {
     if (!capturing_) {
         fg_ = vcap_open(&device_);
 
@@ -112,7 +112,7 @@ void VcapQt::startCapture() {
     }
 }
 
-void VcapQt::stopCapture() {
+void MainWindow::stopCapture() {
     if (capturing_) {
         capturing_ = false;
         killTimer(captureTimer_);
@@ -126,7 +126,7 @@ void VcapQt::stopCapture() {
     }
 }
 
-void VcapQt::importSettings() {
+void MainWindow::importSettings() {
     if (capturing_) {
         QString fileName = QFileDialog::getOpenFileName(this,
                                                         "Import Settings",
@@ -147,7 +147,7 @@ void VcapQt::importSettings() {
     }
 }
 
-void VcapQt::exportSettings() {
+void MainWindow::exportSettings() {
     if (capturing_) {
         QString fileName = QFileDialog::getSaveFileName(this,
                                                         "Export Settings",
@@ -163,12 +163,12 @@ void VcapQt::exportSettings() {
     }
 }
 
-void VcapQt::quit() {
+void MainWindow::quit() {
     stopCapture();
     QCoreApplication::quit();
 }
 
-void VcapQt::resetControls() {
+void MainWindow::resetControls() {
     if (vcap_reset_all_ctrls(fg_) == -1) {
         std::cerr << vcap_get_error() << std::endl;
     }
@@ -177,12 +177,12 @@ void VcapQt::resetControls() {
     checkControls();
 }
 
-void VcapQt::snapshot() {
+void MainWindow::snapshot() {
     if (capturing_)
         snapshotTimer_ = startTimer(ui->delaySpinBox->value() * 1000);
 }
 
-void VcapQt::timerEvent(QTimerEvent* event) {
+void MainWindow::timerEvent(QTimerEvent* event) {
     if (capturing_) {
         if (vcap_grab(fg_, frame_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -212,7 +212,7 @@ void VcapQt::timerEvent(QTimerEvent* event) {
     }
 }
 
-void VcapQt::switchCamera(const QString &device) {
+void MainWindow::switchCamera(const QString &device) {
     bool wasCapturing = capturing_;
 
         if (capturing_)
@@ -229,7 +229,7 @@ void VcapQt::switchCamera(const QString &device) {
         startCapture();
 }
 
-void VcapQt::switchSize(const QString &sizeStr) {
+void MainWindow::switchSize(const QString &sizeStr) {
     if (capturing_) {
         capturing_ = false;
         killTimer(captureTimer_);
@@ -259,7 +259,7 @@ void VcapQt::switchSize(const QString &sizeStr) {
     }
 }
 
-void VcapQt::switchRate(const QString &rateStr) {
+void MainWindow::switchRate(const QString &rateStr) {
     if (capturing_) {
         capturing_ = false;
         killTimer(captureTimer_);
@@ -283,7 +283,7 @@ void VcapQt::switchRate(const QString &rateStr) {
     }
 }
 
-void VcapQt::addControls() {
+void MainWindow::addControls() {
     vcap_ctrl_desc desc;
     vcap_ctrl_itr* itr = vcap_new_ctrl_itr(fg_);
 
@@ -324,15 +324,16 @@ void VcapQt::addControls() {
     }
 }
 
-void VcapQt::controlChanged() {
+void MainWindow::controlChanged() {
     checkControls();
 }
 
-void VcapQt::removeControls() {
+void MainWindow::removeControls() {
     controls_.resize(0);
 
     QLayoutItem* item = nullptr;
 
+    // WARNING: The following constant may change if additional widgets are added to controlsForm
     while ((item = ui->controlsForm->itemAt(14)) != nullptr) {
         if (item->widget()) {
             delete item->widget();
@@ -340,19 +341,19 @@ void VcapQt::removeControls() {
     }
 }
 
-void VcapQt::checkControls() {
+void MainWindow::checkControls() {
     for (unsigned i = 0; i < controls_.size(); i++) {
         controls_[i]->check();
     }
 }
 
-void VcapQt::updateControls() {
+void MainWindow::updateControls() {
     for (unsigned i = 0; i < controls_.size(); i++) {
         controls_[i]->update();
     }
 }
 
-void VcapQt::addFrameSizes() {
+void MainWindow::addFrameSizes() {
     vcap_size size;
     vcap_size_itr* itr = vcap_new_size_itr(fg_, VCAP_FMT_RGB24);
 
@@ -366,13 +367,13 @@ void VcapQt::addFrameSizes() {
     updateFrameSize();
 }
 
-void VcapQt::removeFrameSizes() {
+void MainWindow::removeFrameSizes() {
     while (ui->sizeComboBox->count() > 0) {
         ui->sizeComboBox->removeItem(0);
     }
 }
 
-void VcapQt::updateFrameSize() {
+void MainWindow::updateFrameSize() {
     vcap_fmt_id id;
     vcap_get_fmt(fg_, &id, &frameSize_);
 
@@ -386,7 +387,7 @@ void VcapQt::updateFrameSize() {
     }
 }
 
-void VcapQt::addFrameRates() {
+void MainWindow::addFrameRates() {
     vcap_rate rate;
     vcap_rate_itr* itr = vcap_new_rate_itr(fg_, VCAP_FMT_RGB24, frameSize_);
 
@@ -399,13 +400,13 @@ void VcapQt::addFrameRates() {
     updateFrameRate();
 }
 
-void VcapQt::removeFrameRates() {
+void MainWindow::removeFrameRates() {
     while (ui->frameRateComboBox->count() > 0) {
         ui->frameRateComboBox->removeItem(0);
     }
 }
 
-void VcapQt::updateFrameRate() {
+void MainWindow::updateFrameRate() {
     vcap_get_rate(fg_, &frameRate_);
     QString frameRateStr = QString::number(frameRate_.numerator) + "/" + QString::number(frameRate_.denominator);
 
@@ -417,7 +418,7 @@ void VcapQt::updateFrameRate() {
     }
 }
 
-void VcapQt::displayImage(int width, int height, std::uint8_t* data) {
+void MainWindow::displayImage(int width, int height, std::uint8_t* data) {
     QImage qImage = colorToQImage(width, height, data);
     ui->videoImage->setPixmap(QPixmap::fromImage(qImage));
 }

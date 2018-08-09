@@ -17,21 +17,21 @@ LIBS += -L /usr/lib/libv4l2 -L/usr/local/lib -lvcap -lv4l2 -lpng -ljpeg -ljansso
 
 SOURCES += Main.cpp Utils.cpp \
     ControlWrapper.cpp \
-    VcapQt.cpp \
     BooleanControl.cpp \
     MenuControl.cpp \
     IntegerControl.cpp \
     ButtonControl.cpp \
-    IntegerMenuControl.cpp
+    IntegerMenuControl.cpp \
+    MainWindow.cpp
 
 HEADERS  += Utils.hpp \
     ControlWrapper.hpp \
-    VcapQt.hpp \
     IntegerControl.hpp \
     MenuControl.hpp \
     BooleanControl.hpp \
     ButtonControl.hpp \
-    IntegerMenuControl.hpp
+    IntegerMenuControl.hpp \
+    MainWindow.hpp
 
 FORMS    += \
     VcapQt.ui

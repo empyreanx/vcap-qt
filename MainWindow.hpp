@@ -37,15 +37,15 @@
 #include "Utils.hpp"
 
 namespace Ui {
-    class VcapQt;
+    class MainWindow;
 }
 
-class VcapQt : public QMainWindow {
+class MainWindow : public QMainWindow {
     Q_OBJECT
     
 public:
-    explicit VcapQt(QWidget *parent = nullptr);
-    ~VcapQt();
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
 
 private slots:
     void controlChanged();
@@ -80,7 +80,7 @@ protected:
     void timerEvent(QTimerEvent* event);
 
 private:
-    Ui::VcapQt* ui;
+    Ui::MainWindow* ui;
 
     int captureTimer_;
     int snapshotTimer_;
