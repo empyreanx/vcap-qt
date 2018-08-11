@@ -90,6 +90,7 @@ private:
     vcap_device device_;
     vcap_fg* fg_;
     vcap_frame* frame_;
+    vcap_frame* clone_;
     vcap_rate frameRate_;
     vcap_size frameSize_;
 

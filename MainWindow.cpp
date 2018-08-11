@@ -97,6 +97,7 @@ void MainWindow::startCapture() {
         }
 
         frame_ = vcap_alloc_frame(fg_);
+        clone_ = vcap_alloc_frame(fg_);
 
         if (!frame_) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -117,6 +118,7 @@ void MainWindow::stopCapture() {
         capturing_ = false;
         killTimer(captureTimer_);
 
+        vcap_free_frame(clone_);
         vcap_free_frame(frame_);
         vcap_close(fg_);
 
@@ -151,10 +153,11 @@ void MainWindow::exportSettings() {
     if (capturing_) {
         QString fileName = QFileDialog::getSaveFileName(this,
                                                         "Export Settings",
-                                                        QDir::currentPath(),
+                                                        QDir::currentPath() + "/settings.json",
                                                         "JSON (*.json)",
                                                         nullptr,
                                                         QFileDialog::DontUseNativeDialog);
+
         if (!fileName.isNull()) {
             if (vcap_export_settings(fg_, fileName.toLatin1().data()) == -1) {
                 std::cerr << vcap_get_error() << std::endl;
@@ -190,6 +193,10 @@ void MainWindow::timerEvent(QTimerEvent* event) {
         }
 
         if (event->timerId() == snapshotTimer_) {
+            killTimer(snapshotTimer_);
+
+            vcap_copy_frame(clone_, frame_);
+
             QString fileName = QFileDialog::getSaveFileName(this,
                                                             "Save Image",
                                                             QDir::currentPath(),
@@ -199,13 +206,11 @@ void MainWindow::timerEvent(QTimerEvent* event) {
 
             if (!fileName.isNull()) {
                 if (ui->formatComboBox->currentText() == "PNG") {
-                    vcap_save_png(frame_, fileName.toLatin1().data());
+                    vcap_save_png(clone_, fileName.toLatin1().data());
                 } else {
-                    vcap_save_jpeg(frame_, fileName.toLatin1().data());
+                    vcap_save_jpeg(clone_, fileName.toLatin1().data());
                 }
             }
-
-            killTimer(snapshotTimer_);
         } else {
             displayImage(static_cast<int>(frame_->size.width), static_cast<int>(frame_->size.height), frame_->data);
         }
