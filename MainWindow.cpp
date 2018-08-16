@@ -138,7 +138,7 @@ void MainWindow::importSettings() {
                                                         QFileDialog::DontUseNativeDialog);
         if (!fileName.isNull()) {
             if (vcap_import_settings(fg_, fileName.toLatin1().data()) == -1) {
-                std::cerr << vcap_get_error() << std::endl;
+                QMessageBox::warning(this, tr("Error"), vcap_get_error());
             } else {
                 updateControls();
                 updateFrameSize();
@@ -160,7 +160,7 @@ void MainWindow::exportSettings() {
 
         if (!fileName.isNull()) {
             if (vcap_export_settings(fg_, fileName.toLatin1().data()) == -1) {
-                std::cerr << vcap_get_error() << std::endl;
+                QMessageBox::warning(this, tr("Error"), vcap_get_error());
             }
         }
     }
@@ -173,7 +173,7 @@ void MainWindow::quit() {
 
 void MainWindow::resetControls() {
     if (vcap_reset_all_ctrls(fg_) == -1) {
-        std::cerr << vcap_get_error() << std::endl;
+        QMessageBox::warning(this, tr("Error"), vcap_get_error());
     }
 
     updateControls();
@@ -206,9 +206,13 @@ void MainWindow::timerEvent(QTimerEvent* event) {
 
             if (!fileName.isNull()) {
                 if (ui->formatComboBox->currentText() == "PNG") {
-                    vcap_save_png(clone_, fileName.toLatin1().data());
+                    if (vcap_save_png(clone_, fileName.toLatin1().data()) == -1) {
+                        QMessageBox::warning(this, tr("Error"), QString("Unable to save PNG: ") + vcap_get_error());
+                    }
                 } else {
-                    vcap_save_jpeg(clone_, fileName.toLatin1().data());
+                    if (vcap_save_jpeg(clone_, fileName.toLatin1().data()) == -1) {
+                        QMessageBox::warning(this, tr("Error"), QString("Unable to save JPEG: ") + vcap_get_error());
+                    }
                 }
             }
         } else {
@@ -322,6 +326,9 @@ void MainWindow::addControls() {
         connect(controls_.back().get(), SIGNAL(changed()), this, SLOT(controlChanged()));
     }
 
+    if (vcap_ctrl_itr_error(itr))
+        QMessageBox::warning(this, tr("Error"), vcap_get_error());
+
     vcap_free(itr);
 
     for (unsigned i = 0; i < controls_.size(); i++) {
@@ -367,6 +374,9 @@ void MainWindow::addFrameSizes() {
         ui->sizeComboBox->addItem(sizeStr);
     }
 
+    if (vcap_size_itr_error(itr))
+        QMessageBox::warning(this, tr("Error"), vcap_get_error());
+
     vcap_free(itr);
 
     updateFrameSize();
@@ -399,6 +409,9 @@ void MainWindow::addFrameRates() {
     while (vcap_rate_itr_next(itr, &rate)) {
         ui->frameRateComboBox->addItem(QString::number(rate.numerator) + "/" + QString::number(rate.denominator));
     }
+
+    if (vcap_rate_itr_error(itr))
+        QMessageBox::warning(this, tr("Error"), vcap_get_error());
 
     vcap_free(itr);
 
