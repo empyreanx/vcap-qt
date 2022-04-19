@@ -28,6 +28,7 @@ add_executable(vcap-qt
     MenuControl.cpp
     IntegerControl.hpp
     IntegerControl.cpp
+    ButtonControl.hpp
     ButtonControl.cpp
     IntegerMenuControl.hpp
     IntegerMenuControl.cpp
