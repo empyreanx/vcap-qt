@@ -18,13 +18,20 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_executable(vcap-qt
     MainWindow.ui
     Main.cpp
+    Utils.hpp
     Utils.cpp
+    ControlWrapper.hpp
     ControlWrapper.cpp
+    BooleanControl.hpp
     BooleanControl.cpp
+    MenuControl.hpp
     MenuControl.cpp
+    IntegerControl.hpp
     IntegerControl.cpp
     ButtonControl.cpp
+    IntegerMenuControl.hpp
     IntegerMenuControl.cpp
+    MainWindow.hpp
     MainWindow.cpp
 )
 
