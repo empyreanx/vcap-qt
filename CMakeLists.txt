@@ -37,6 +37,7 @@ add_executable(vcap-qt
     MainWindow.cpp
 )
 
-target_link_libraries(vcap-qt v4l2)
+target_include_directories(vcap-qt PUBLIC /usr/local/include)
+target_link_libraries(vcap-qt v4l2 vcap)
 
 target_link_libraries(vcap-qt Qt5::Widgets)

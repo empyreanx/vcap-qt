@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QThread>
+#include <QWidget>
 
 #include <vcap/vcap.h>
 
@@ -93,7 +94,7 @@ private:
     vcap_rate frameRate_;
     vcap_size frameSize_;
 
-    std::vector<vcap_device> devices_;
+    std::vector<vcap_fg> devices_;
     std::vector<std::unique_ptr<ControlWrapper>> controls_;
 
     void displayImage(int width, int height, unsigned char *data);

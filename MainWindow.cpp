@@ -18,6 +18,7 @@
 #include <vcap/vcap.h>
 
 #include <QFileDialog>
+#include <QTimerEvent>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
@@ -27,10 +28,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     int index = 0;
     int result;
 
-    vcap_device device;
-
     do {
-        result = vcap_enum_devices(&device, index);
+        vcap_fg fg = {};
+
+        result = vcap_enum_devices(index, &fg);
 
         if (result == VCAP_ENUM_ERROR) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -38,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
 
         if (result == VCAP_ENUM_OK) {
-            devices_.push_back(device);
+            devices_.push_back(fg);
         }
 
     } while (result != VCAP_ENUM_INVALID && ++index);
@@ -48,11 +49,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         QApplication::quit();
     }
 
-    for (unsigned i = 0; i < devices_.size(); i++) {
-        ui->cameraComboBox->addItem(devices_[i].path);
-    }
+    //for (unsigned i = 0; i < devices_.size(); i++) {
+    //    ui->cameraComboBox->addItem(devices_[i].path);
+    //}
 
-    device_ = devices_[0];
+    fg_ = &devices_[0];
 
     connect(ui->actionStartCapture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
     connect(ui->actionStopCapture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
@@ -75,7 +76,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::startCapture() {
     if (!capturing_) {
-        fg_ = vcap_open(&device_);
+        vcap_open(fg_->path, fg_); // Check error
 
         if (!fg_) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -222,7 +223,7 @@ void MainWindow::timerEvent(QTimerEvent* event) {
 }
 
 void MainWindow::switchCamera(const QString &device) {
-    bool wasCapturing = capturing_;
+    /*bool wasCapturing = capturing_;
 
         if (capturing_)
             stopCapture();
@@ -235,7 +236,7 @@ void MainWindow::switchCamera(const QString &device) {
     }
 
     if (wasCapturing)
-        startCapture();
+        startCapture();*/
 }
 
 void MainWindow::switchSize(const QString &sizeStr) {
