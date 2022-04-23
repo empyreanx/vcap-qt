@@ -87,7 +87,6 @@ private:
 
     bool capturing_;
 
-    vcap_device device_;
     vcap_fg* fg_;
     vcap_frame* frame_;
     vcap_frame* clone_;

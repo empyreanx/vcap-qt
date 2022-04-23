@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1.0)
 
 project(vcap-qt VERSION 1.0.0 LANGUAGES CXX)
 
+set(CXX "g++")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -35,5 +36,7 @@ add_executable(vcap-qt
     MainWindow.hpp
     MainWindow.cpp
 )
+
+target_link_libraries(vcap-qt v4l2)
 
 target_link_libraries(vcap-qt Qt5::Widgets)

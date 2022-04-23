@@ -130,7 +130,7 @@ void MainWindow::stopCapture() {
 
 void MainWindow::importSettings() {
     if (capturing_) {
-        QString fileName = QFileDialog::getOpenFileName(this,
+        /*QString fileName = QFileDialog::getOpenFileName(this,
                                                         "Import Settings",
                                                         QDir::currentPath(),
                                                         "JSON (*.json)",
@@ -145,13 +145,13 @@ void MainWindow::importSettings() {
                 updateFrameRate();
                 checkControls();
             }
-        }
+        }*/
     }
 }
 
 void MainWindow::exportSettings() {
     if (capturing_) {
-        QString fileName = QFileDialog::getSaveFileName(this,
+        /*QString fileName = QFileDialog::getSaveFileName(this,
                                                         "Export Settings",
                                                         QDir::currentPath() + "/settings.json",
                                                         "JSON (*.json)",
@@ -162,7 +162,7 @@ void MainWindow::exportSettings() {
             if (vcap_export_settings(fg_, fileName.toLatin1().data()) == -1) {
                 QMessageBox::warning(this, tr("Error"), vcap_get_error());
             }
-        }
+        }*/
     }
 }
 
@@ -204,7 +204,7 @@ void MainWindow::timerEvent(QTimerEvent* event) {
                                                             nullptr,
                                                             QFileDialog::DontUseNativeDialog);
 
-            if (!fileName.isNull()) {
+            /*if (!fileName.isNull()) {
                 if (ui->formatComboBox->currentText() == "PNG") {
                     if (vcap_save_png(clone_, fileName.toLatin1().data()) == -1) {
                         QMessageBox::warning(this, tr("Error"), QString("Unable to save PNG: ") + vcap_get_error());
@@ -214,7 +214,7 @@ void MainWindow::timerEvent(QTimerEvent* event) {
                         QMessageBox::warning(this, tr("Error"), QString("Unable to save JPEG: ") + vcap_get_error());
                     }
                 }
-            }
+            }*/
         } else {
             displayImage(static_cast<int>(frame_->size.width), static_cast<int>(frame_->size.height), frame_->data);
         }
