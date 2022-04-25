@@ -29,9 +29,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     int result;
 
     do {
-        vcap_fg fg = {};
+        vcap_device_info info = {};
 
-        result = vcap_enum_devices(index, &fg);
+        result = vcap_enum_devices(index, &info);
 
         if (result == VCAP_ENUM_ERROR) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
 
         if (result == VCAP_ENUM_OK) {
-            devices_.push_back(fg);
+            devices_.push_back(info);
         }
 
     } while (result != VCAP_ENUM_INVALID && ++index);
@@ -53,7 +53,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //    ui->cameraComboBox->addItem(devices_[i].path);
     //}
 
-    fg_ = &devices_[0];
+    device_ = devices_[0];
+    fg_ = new vcap_fg;
 
     connect(ui->actionStartCapture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
     connect(ui->actionStopCapture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
@@ -76,7 +77,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::startCapture() {
     if (!capturing_) {
-        vcap_open(fg_->path, fg_); // Check error
+        vcap_open(device_.path, fg_); // Check error
 
         if (!fg_) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -253,6 +254,15 @@ void MainWindow::switchSize(const QString &sizeStr) {
 
         vcap_size size = { width, height };
 
+        vcap_close(fg_);
+
+        std::string path = fg_->path;
+
+        if (vcap_open(path.c_str(), fg_) == -1) {
+            QMessageBox::critical(this, tr("Error"), vcap_get_error());
+            QApplication::quit();
+        }
+
         if (vcap_set_fmt(fg_, VCAP_FMT_RGB24, size) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
             QApplication::quit();
@@ -260,6 +270,12 @@ void MainWindow::switchSize(const QString &sizeStr) {
 
         frameSize_ = size;
         frame_ = vcap_alloc_frame(fg_);
+
+        removeControls();
+        addControls();
+
+        removeFrameSizes();
+        addFrameSizes();
 
         removeFrameRates();
         addFrameRates();
