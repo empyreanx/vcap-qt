@@ -245,9 +245,6 @@ void MainWindow::switchSize(const QString &sizeStr) {
 
         uint32_t width = parts[0].toUInt();
         uint32_t height = parts[1].toUInt();
-
-        vcap_free_frame(frame_);
-
         vcap_size size = { width, height };
 
         vcap_stop_stream(vd_);
@@ -258,13 +255,8 @@ void MainWindow::switchSize(const QString &sizeStr) {
         }
 
         frameSize_ = size;
-        frame_ = vcap_alloc_frame(vd_);
 
-        removeControls();
-        addControls();
-
-        removeFrameSizes();
-        addFrameSizes();
+        vcap_update_frame(vd_, frame_);
 
         removeFrameRates();
         addFrameRates();
