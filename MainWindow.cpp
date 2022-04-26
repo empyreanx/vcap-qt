@@ -99,7 +99,6 @@ void MainWindow::startCapture() {
         }
 
         frame_ = vcap_alloc_frame(fg_);
-        clone_ = vcap_alloc_frame(fg_);
 
         if (!frame_) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -120,7 +119,6 @@ void MainWindow::stopCapture() {
         capturing_ = false;
         killTimer(captureTimer_);
 
-        vcap_free_frame(clone_);
         vcap_free_frame(frame_);
         vcap_close(fg_);
 
@@ -197,8 +195,6 @@ void MainWindow::timerEvent(QTimerEvent* event) {
         if (event->timerId() == snapshotTimer_) {
             killTimer(snapshotTimer_);
 
-            vcap_copy_frame(clone_, frame_);
-
             QString fileName = QFileDialog::getSaveFileName(this,
                                                             "Save Image",
                                                             QDir::currentPath(),
@@ -254,14 +250,7 @@ void MainWindow::switchSize(const QString &sizeStr) {
 
         vcap_size size = { width, height };
 
-        vcap_close(fg_);
-
-        std::string path = fg_->path;
-
-        if (vcap_open(path.c_str(), fg_) == -1) {
-            QMessageBox::critical(this, tr("Error"), vcap_get_error());
-            QApplication::quit();
-        }
+        vcap_stop_stream(fg_);
 
         if (vcap_set_fmt(fg_, VCAP_FMT_RGB24, size) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -279,6 +268,8 @@ void MainWindow::switchSize(const QString &sizeStr) {
 
         removeFrameRates();
         addFrameRates();
+
+        vcap_start_stream(fg_);
 
         captureTimer_ = startTimer(0);
         capturing_ = true;
