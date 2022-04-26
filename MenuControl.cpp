@@ -17,9 +17,9 @@
 #include <QDebug>
 #include "Utils.hpp"
 
-MenuControl::MenuControl(vcap_fg* fg, vcap_ctrl_desc desc) : ControlWrapper(fg, desc) {
+MenuControl::MenuControl(vcap_vd* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc) {
     vcap_menu_item item;
-    vcap_menu_itr* itr = vcap_new_menu_itr(fg, desc.id);
+    vcap_menu_itr* itr = vcap_new_menu_itr(vd, desc.id);
 
     while (vcap_menu_itr_next(itr, &item)) {
         comboBox_.addItem(reinterpret_cast<char*>(item.name));
@@ -33,7 +33,7 @@ MenuControl::MenuControl(vcap_fg* fg, vcap_ctrl_desc desc) : ControlWrapper(fg, 
 }
 
 void MenuControl::check() {
-    int status = vcap_ctrl_status(fg_, desc_.id);
+    int status = vcap_ctrl_status(vd_, desc_.id);
     bool enabled = comboBox_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
@@ -50,7 +50,7 @@ void MenuControl::check() {
 void MenuControl::update() {
     int32_t value;
 
-    if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
+    if (vcap_get_ctrl(vd_, desc_.id, &value) == -1)
         std::cout << std::string(vcap_get_error()) << std::endl;
 
     comboBox_.blockSignals(true);

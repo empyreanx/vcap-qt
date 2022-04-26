@@ -25,7 +25,7 @@ class IntegerMenuControl : public ControlWrapper {
     Q_OBJECT
 
 public:
-    IntegerMenuControl(vcap_fg* fg, vcap_ctrl_desc desc);
+    IntegerMenuControl(vcap_vd* vd, vcap_ctrl_desc desc);
     virtual ~IntegerMenuControl() {}
 
     QWidget* widget() {

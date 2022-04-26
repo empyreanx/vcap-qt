@@ -89,7 +89,7 @@ private:
     bool capturing_;
 
     vcap_device_info device_;
-    vcap_fg* fg_;
+    vcap_vd* vd_;
     vcap_frame* frame_;
     vcap_rate frameRate_;
     vcap_size frameSize_;

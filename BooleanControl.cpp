@@ -14,13 +14,13 @@
 
 #include "BooleanControl.hpp"
 
-BooleanControl::BooleanControl(vcap_fg* fg, vcap_ctrl_desc desc) : ControlWrapper(fg, desc) {
+BooleanControl::BooleanControl(vcap_vd* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc) {
     update();
     connect(&checkBox_, SIGNAL(clicked(bool)), this, SLOT(setValue(bool)));
 }
 
 void BooleanControl::setValue(bool value) {
-    if (vcap_set_ctrl(fg_, desc_.id, value ? 1 : 0) == -1) {
+    if (vcap_set_ctrl(vd_, desc_.id, value ? 1 : 0) == -1) {
         std::cout << std::string(vcap_get_error()) << std::endl;
     } else {
         emit changed();
@@ -28,7 +28,7 @@ void BooleanControl::setValue(bool value) {
 }
 
 void BooleanControl::check() {
-    int status = vcap_ctrl_status(fg_, desc_.id);
+    int status = vcap_ctrl_status(vd_, desc_.id);
     bool enabled = checkBox_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
@@ -45,7 +45,7 @@ void BooleanControl::check() {
 void BooleanControl::update() {
     int32_t value;
 
-    if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
+    if (vcap_get_ctrl(vd_, desc_.id, &value) == -1)
         std::cout << std::string(vcap_get_error()) << std::endl;
 
     checkBox_.blockSignals(true);

@@ -14,7 +14,7 @@
 
 #include "IntegerControl.hpp"
 
-IntegerControl::IntegerControl(vcap_fg* fg, vcap_ctrl_desc desc) : ControlWrapper(fg, desc), slider_(Qt::Horizontal) {
+IntegerControl::IntegerControl(vcap_vd* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc), slider_(Qt::Horizontal) {
     slider_.setMinimum(desc.min);
     slider_.setMaximum(desc.max);
     slider_.setTickInterval(desc.step);
@@ -25,7 +25,7 @@ IntegerControl::IntegerControl(vcap_fg* fg, vcap_ctrl_desc desc) : ControlWrappe
 }
 
 void IntegerControl::check() {
-    int status = vcap_ctrl_status(fg_, desc_.id);
+    int status = vcap_ctrl_status(vd_, desc_.id);
     bool enabled = slider_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
@@ -42,7 +42,7 @@ void IntegerControl::check() {
 void IntegerControl::update() {
     int32_t value;
 
-    if (vcap_get_ctrl(fg_, desc_.id, &value) == -1)
+    if (vcap_get_ctrl(vd_, desc_.id, &value) == -1)
         std::cout << std::string(vcap_get_error()) << std::endl;
 
     slider_.blockSignals(true);

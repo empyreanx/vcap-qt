@@ -26,7 +26,7 @@ class IntegerControl : public ControlWrapper {
     Q_OBJECT
 
 public:
-    IntegerControl(vcap_fg* fg, vcap_ctrl_desc desc);
+    IntegerControl(vcap_vd* vd, vcap_ctrl_desc desc);
     virtual ~IntegerControl() {}
 
     QWidget* widget() {

@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //}
 
     device_ = devices_[0];
-    fg_ = new vcap_fg;
+    vd_ = new vcap_vd;
 
     connect(ui->actionStartCapture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
     connect(ui->actionStopCapture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
@@ -77,14 +77,14 @@ MainWindow::~MainWindow() {
 
 void MainWindow::startCapture() {
     if (!capturing_) {
-        vcap_open(device_.path, fg_); // Check error
+        vcap_open(device_.path, vd_); // Check error
 
-        if (!fg_) {
+        if (!vd_) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
             QApplication::quit();
         }
 
-        vcap_size_itr* itr = vcap_new_size_itr(fg_, VCAP_FMT_RGB24);
+        vcap_size_itr* itr = vcap_new_size_itr(vd_, VCAP_FMT_RGB24);
 
         if (!vcap_size_itr_next(itr, &frameSize_)) {
             QMessageBox::critical(this, tr("Error"), tr("Unable to get initial frame size"));
@@ -93,12 +93,12 @@ void MainWindow::startCapture() {
 
         vcap_free(itr);
 
-        if (vcap_set_fmt(fg_, VCAP_FMT_RGB24, frameSize_) == -1) {
+        if (vcap_set_fmt(vd_, VCAP_FMT_RGB24, frameSize_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
             QApplication::quit();
         }
 
-        frame_ = vcap_alloc_frame(fg_);
+        frame_ = vcap_alloc_frame(vd_);
 
         if (!frame_) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -120,7 +120,7 @@ void MainWindow::stopCapture() {
         killTimer(captureTimer_);
 
         vcap_free_frame(frame_);
-        vcap_close(fg_);
+        vcap_close(vd_);
 
         removeControls();
         removeFrameSizes();
@@ -137,7 +137,7 @@ void MainWindow::importSettings() {
                                                         nullptr,
                                                         QFileDialog::DontUseNativeDialog);
         if (!fileName.isNull()) {
-            if (vcap_import_settings(fg_, fileName.toLatin1().data()) == -1) {
+            if (vcap_import_settings(vd_, fileName.toLatin1().data()) == -1) {
                 QMessageBox::warning(this, tr("Error"), vcap_get_error());
             } else {
                 updateControls();
@@ -159,7 +159,7 @@ void MainWindow::exportSettings() {
                                                         QFileDialog::DontUseNativeDialog);
 
         if (!fileName.isNull()) {
-            if (vcap_export_settings(fg_, fileName.toLatin1().data()) == -1) {
+            if (vcap_export_settings(vd_, fileName.toLatin1().data()) == -1) {
                 QMessageBox::warning(this, tr("Error"), vcap_get_error());
             }
         }*/
@@ -172,7 +172,7 @@ void MainWindow::quit() {
 }
 
 void MainWindow::resetControls() {
-    if (vcap_reset_all_ctrls(fg_) == -1) {
+    if (vcap_reset_all_ctrls(vd_) == -1) {
         QMessageBox::warning(this, tr("Error"), vcap_get_error());
     }
 
@@ -187,7 +187,7 @@ void MainWindow::snapshot() {
 
 void MainWindow::timerEvent(QTimerEvent* event) {
     if (capturing_) {
-        if (vcap_grab(fg_, frame_) == -1) {
+        if (vcap_grab(vd_, frame_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
             QApplication::quit();
         }
@@ -250,15 +250,15 @@ void MainWindow::switchSize(const QString &sizeStr) {
 
         vcap_size size = { width, height };
 
-        vcap_stop_stream(fg_);
+        vcap_stop_stream(vd_);
 
-        if (vcap_set_fmt(fg_, VCAP_FMT_RGB24, size) == -1) {
+        if (vcap_set_fmt(vd_, VCAP_FMT_RGB24, size) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
             QApplication::quit();
         }
 
         frameSize_ = size;
-        frame_ = vcap_alloc_frame(fg_);
+        frame_ = vcap_alloc_frame(vd_);
 
         removeControls();
         addControls();
@@ -269,7 +269,7 @@ void MainWindow::switchSize(const QString &sizeStr) {
         removeFrameRates();
         addFrameRates();
 
-        vcap_start_stream(fg_);
+        vcap_start_stream(vd_);
 
         captureTimer_ = startTimer(0);
         capturing_ = true;
@@ -288,7 +288,7 @@ void MainWindow::switchRate(const QString &rateStr) {
 
         vcap_rate rate = { numerator, denominator };
 
-        if (vcap_set_rate(fg_, rate) == -1) {
+        if (vcap_set_rate(vd_, rate) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
             QApplication::quit();
         }
@@ -302,28 +302,28 @@ void MainWindow::switchRate(const QString &rateStr) {
 
 void MainWindow::addControls() {
     vcap_ctrl_desc desc;
-    vcap_ctrl_itr* itr = vcap_new_ctrl_itr(fg_);
+    vcap_ctrl_itr* itr = vcap_new_ctrl_itr(vd_);
 
     while (vcap_ctrl_itr_next(itr, &desc)) {
         switch (desc.type) {
         case VCAP_CTRL_TYPE_BOOLEAN:
-            controls_.emplace_back(new BooleanControl(fg_, desc));
+            controls_.emplace_back(new BooleanControl(vd_, desc));
             break;
 
         case VCAP_CTRL_TYPE_INTEGER:
-            controls_.emplace_back(new IntegerControl(fg_, desc));
+            controls_.emplace_back(new IntegerControl(vd_, desc));
             break;
 
         case VCAP_CTRL_TYPE_MENU:
-            controls_.emplace_back(new MenuControl(fg_, desc));
+            controls_.emplace_back(new MenuControl(vd_, desc));
             break;
 
         case VCAP_CTRL_TYPE_BUTTON:
-            controls_.emplace_back(new ButtonControl(fg_, desc));
+            controls_.emplace_back(new ButtonControl(vd_, desc));
             break;
 
         case VCAP_CTRL_TYPE_INTEGER_MENU:
-            controls_.emplace_back(new IntegerMenuControl(fg_, desc));
+            controls_.emplace_back(new IntegerMenuControl(vd_, desc));
             break;
 
         default:
@@ -375,7 +375,7 @@ void MainWindow::updateControls() {
 
 void MainWindow::addFrameSizes() {
     vcap_size size;
-    vcap_size_itr* itr = vcap_new_size_itr(fg_, VCAP_FMT_RGB24);
+    vcap_size_itr* itr = vcap_new_size_itr(vd_, VCAP_FMT_RGB24);
 
     while (vcap_size_itr_next(itr, &size)) {
         QString sizeStr = QString::number(size.width) + "x" + QString::number(size.height);
@@ -398,7 +398,7 @@ void MainWindow::removeFrameSizes() {
 
 void MainWindow::updateFrameSize() {
     vcap_fmt_id id;
-    vcap_get_fmt(fg_, &id, &frameSize_);
+    vcap_get_fmt(vd_, &id, &frameSize_);
 
     QString sizeStr = QString::number(frameSize_.width) + "x" + QString::number(frameSize_.height);
 
@@ -412,7 +412,7 @@ void MainWindow::updateFrameSize() {
 
 void MainWindow::addFrameRates() {
     vcap_rate rate;
-    vcap_rate_itr* itr = vcap_new_rate_itr(fg_, VCAP_FMT_RGB24, frameSize_);
+    vcap_rate_itr* itr = vcap_new_rate_itr(vd_, VCAP_FMT_RGB24, frameSize_);
 
     while (vcap_rate_itr_next(itr, &rate)) {
         ui->frameRateComboBox->addItem(QString::number(rate.numerator) + "/" + QString::number(rate.denominator));
@@ -433,7 +433,7 @@ void MainWindow::removeFrameRates() {
 }
 
 void MainWindow::updateFrameRate() {
-    vcap_get_rate(fg_, &frameRate_);
+    vcap_get_rate(vd_, &frameRate_);
     QString frameRateStr = QString::number(frameRate_.numerator) + "/" + QString::number(frameRate_.denominator);
 
     for (int i = 0; i < ui->sizeComboBox->count(); i++) {
