@@ -49,12 +49,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         QApplication::quit();
     }
 
-    //for (unsigned i = 0; i < devices_.size(); i++) {
-    //    ui->cameraComboBox->addItem(devices_[i].path);
-    //}
+    for (unsigned i = 0; i < devices_.size(); i++) {
+        ui->cameraComboBox->addItem(devices_[i].path);
+    }
 
     device_ = devices_[0];
-    vd_ = new vcap_vd;
+    vd_ = vcap_create_device(devices_[0].path, 0);
 
     connect(ui->actionStartCapture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
     connect(ui->actionStopCapture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
@@ -77,7 +77,11 @@ MainWindow::~MainWindow() {
 
 void MainWindow::startCapture() {
     if (!capturing_) {
-        vcap_open(device_.path, vd_); // Check error
+        if (-1 == vcap_open(vd_))
+        {
+            QMessageBox::critical(this, tr("Error"), vcap_get_error());
+            QApplication::quit();
+        }
 
         if (!vd_) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
@@ -98,6 +102,8 @@ void MainWindow::startCapture() {
             QApplication::quit();
         }
 
+        vcap_init_stream(vd_, 3);
+
         frame_ = vcap_alloc_frame(vd_);
 
         if (!frame_) {
@@ -109,6 +115,8 @@ void MainWindow::startCapture() {
         addFrameSizes();
         addFrameRates();
 
+        vcap_start_stream(vd_);
+
         captureTimer_ = startTimer(0);
         capturing_ = true;
     }
@@ -118,6 +126,9 @@ void MainWindow::stopCapture() {
     if (capturing_) {
         capturing_ = false;
         killTimer(captureTimer_);
+
+        vcap_stop_stream(vd_);
+        vcap_shutdown_stream(vd_);
 
         vcap_free_frame(frame_);
         vcap_close(vd_);
@@ -247,8 +258,6 @@ void MainWindow::switchSize(const QString &sizeStr) {
         uint32_t height = parts[1].toUInt();
         vcap_size size = { width, height };
 
-        vcap_stop_stream(vd_);
-
         if (vcap_set_fmt(vd_, VCAP_FMT_RGB24, size) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error());
             QApplication::quit();
@@ -260,8 +269,6 @@ void MainWindow::switchSize(const QString &sizeStr) {
 
         removeFrameRates();
         addFrameRates();
-
-        vcap_start_stream(vd_);
 
         captureTimer_ = startTimer(0);
         capturing_ = true;
