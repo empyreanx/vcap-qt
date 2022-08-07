@@ -25,7 +25,7 @@ class MenuControl : public ControlWrapper {
     Q_OBJECT
 
 public:
-    MenuControl(vcap_vd* vd, vcap_ctrl_desc desc);
+    MenuControl(vcap_dev* vd, vcap_ctrl_desc desc);
     virtual ~MenuControl() {}
 
     QWidget* widget() {

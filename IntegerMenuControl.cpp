@@ -17,7 +17,7 @@
 #include <QDebug>
 #include "Utils.hpp"
 
-IntegerMenuControl::IntegerMenuControl(vcap_vd* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc) {
+IntegerMenuControl::IntegerMenuControl(vcap_dev* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc) {
     vcap_menu_item item;
     vcap_menu_itr* itr = vcap_new_menu_itr(vd, desc.id);
 

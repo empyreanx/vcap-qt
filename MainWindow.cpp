@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     int result;
 
     do {
-        vcap_device_info info = {};
+        vcap_dev_info info = {};
 
         result = vcap_enum_devices(index, &info);
 
@@ -102,8 +102,6 @@ void MainWindow::startCapture() {
             QApplication::quit();
         }
 
-        //vcap_init_stream(vd_, 3);
-
         frame_ = vcap_alloc_frame(vd_);
 
         if (!frame_) {
@@ -128,8 +126,6 @@ void MainWindow::stopCapture() {
         killTimer(captureTimer_);
 
         vcap_stop_stream(vd_);
-        //vcap_shutdown_stream(vd_);
-
         vcap_free_frame(frame_);
         vcap_close(vd_);
 

@@ -88,13 +88,13 @@ private:
 
     bool capturing_;
 
-    vcap_device_info device_;
-    vcap_vd* vd_;
+    vcap_dev_info device_;
+    vcap_dev* vd_;
     vcap_frame* frame_;
     vcap_rate frameRate_;
     vcap_size frameSize_;
 
-    std::vector<vcap_device_info> devices_;
+    std::vector<vcap_dev_info> devices_;
     std::vector<std::unique_ptr<ControlWrapper>> controls_;
 
     void displayImage(int width, int height, unsigned char *data);

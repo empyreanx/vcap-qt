@@ -14,7 +14,7 @@
 
 #include "IntegerControl.hpp"
 
-IntegerControl::IntegerControl(vcap_vd* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc), slider_(Qt::Horizontal) {
+IntegerControl::IntegerControl(vcap_dev* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc), slider_(Qt::Horizontal) {
     slider_.setMinimum(desc.min);
     slider_.setMaximum(desc.max);
     slider_.setTickInterval(desc.step);

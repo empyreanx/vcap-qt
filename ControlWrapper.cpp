@@ -14,7 +14,7 @@
 
 #include "ControlWrapper.hpp"
 
-ControlWrapper::ControlWrapper(vcap_vd* vd, vcap_ctrl_desc desc) : QObject(nullptr), vd_(vd), desc_(desc) {
+ControlWrapper::ControlWrapper(vcap_dev* vd, vcap_ctrl_desc desc) : QObject(nullptr), vd_(vd), desc_(desc) {
 }
 
 void ControlWrapper::setValue(int value) {

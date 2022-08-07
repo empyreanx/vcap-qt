@@ -14,7 +14,7 @@
 
 #include "BooleanControl.hpp"
 
-BooleanControl::BooleanControl(vcap_vd* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc) {
+BooleanControl::BooleanControl(vcap_dev* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc) {
     update();
     connect(&checkBox_, SIGNAL(clicked(bool)), this, SLOT(setValue(bool)));
 }

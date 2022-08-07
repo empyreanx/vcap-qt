@@ -14,7 +14,7 @@
 
 #include "ButtonControl.hpp"
 
-ButtonControl::ButtonControl(vcap_vd* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc), button_("Execute") {
+ButtonControl::ButtonControl(vcap_dev* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc), button_("Execute") {
     connect(&button_, SIGNAL(clicked(bool)), this, SLOT(push()));
 }
 
