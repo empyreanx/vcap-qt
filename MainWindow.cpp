@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     device_ = devices_[0];
-    vd_ = vcap_create_device(devices_[0].path, 0);
+    vd_ = vcap_create_device(devices_[0].path, 3);
 
     connect(ui->actionStartCapture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
     connect(ui->actionStopCapture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
@@ -102,7 +102,7 @@ void MainWindow::startCapture() {
             QApplication::quit();
         }
 
-        vcap_init_stream(vd_, 3);
+        //vcap_init_stream(vd_, 3);
 
         frame_ = vcap_alloc_frame(vd_);
 
@@ -128,7 +128,7 @@ void MainWindow::stopCapture() {
         killTimer(captureTimer_);
 
         vcap_stop_stream(vd_);
-        vcap_shutdown_stream(vd_);
+        //vcap_shutdown_stream(vd_);
 
         vcap_free_frame(frame_);
         vcap_close(vd_);
