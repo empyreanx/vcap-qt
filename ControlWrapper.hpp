@@ -27,7 +27,7 @@ class ControlWrapper : public QObject {
     Q_OBJECT
 
 public:
-    explicit ControlWrapper(vcap_dev* vd, vcap_ctrl_desc desc);
+    explicit ControlWrapper(vcap_dev* vd, vcap_ctrl_info info);
     virtual ~ControlWrapper() {}
 
     virtual void check() = 0;
@@ -39,11 +39,11 @@ signals:
     void changed();
 
 public slots:
-    void setValue(int value);
+    virtual void setValue(int value);
 
 protected:
     vcap_dev* vd_;
-    vcap_ctrl_desc desc_;
+    vcap_ctrl_info info_;
 };
 
 #endif // CONTROLWRAPPER_HPP

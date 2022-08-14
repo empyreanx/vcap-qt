@@ -14,21 +14,21 @@
 
 #include "BooleanControl.hpp"
 
-BooleanControl::BooleanControl(vcap_dev* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc) {
+BooleanControl::BooleanControl(vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd, info) {
     update();
     connect(&checkBox_, SIGNAL(clicked(bool)), this, SLOT(setValue(bool)));
 }
 
 void BooleanControl::setValue(bool value) {
-    if (vcap_set_ctrl(vd_, desc_.id, value ? 1 : 0) == -1) {
-        std::cout << std::string(vcap_get_error()) << std::endl;
+    if (vcap_set_ctrl(vd_, info_.id, value ? 1 : 0) == -1) {
+        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
     } else {
         emit changed();
     }
 }
 
 void BooleanControl::check() {
-    int status = vcap_ctrl_status(vd_, desc_.id);
+    int status = vcap_ctrl_status(vd_, info_.id);
     bool enabled = checkBox_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
@@ -38,15 +38,15 @@ void BooleanControl::check() {
         checkBox_.setDisabled(false);
     }
 
-    if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_INACTIVE)
+    if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_DISABLED || status == VCAP_CTRL_INACTIVE)
         checkBox_.setDisabled(true);
 }
 
 void BooleanControl::update() {
     int32_t value;
 
-    if (vcap_get_ctrl(vd_, desc_.id, &value) == -1)
-        std::cout << std::string(vcap_get_error()) << std::endl;
+    if (vcap_get_ctrl(vd_, info_.id, &value) == -1)
+        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
 
     checkBox_.blockSignals(true);
     checkBox_.setChecked(!!value);

@@ -14,22 +14,22 @@
 
 #include "ButtonControl.hpp"
 
-ButtonControl::ButtonControl(vcap_dev* vd, vcap_ctrl_desc desc) : ControlWrapper(vd, desc), button_("Execute") {
+ButtonControl::ButtonControl(vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd, info), button_("Execute") {
     connect(&button_, SIGNAL(clicked(bool)), this, SLOT(push()));
 }
 
 void ButtonControl::push() {
-    if (vcap_set_ctrl(vd_, desc_.id, 0) == -1)
-        std::cout << std::string(vcap_get_error()) << std::endl;
+    if (vcap_set_ctrl(vd_, info_.id, 0) == -1)
+        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
 }
 
 void ButtonControl::check() {
-    int status = vcap_ctrl_status(vd_, desc_.id);
+    int status = vcap_ctrl_status(vd_, info_.id);
 
     if (status == VCAP_CTRL_OK)
         button_.setDisabled(false);
 
-    if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_INACTIVE)
+    if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_DISABLED || status == VCAP_CTRL_INACTIVE)
         button_.setDisabled(true);
 }
 

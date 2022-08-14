@@ -28,7 +28,7 @@ class ButtonControl : public ControlWrapper {
     Q_OBJECT
 
 public:
-    ButtonControl(vcap_dev* vd, vcap_ctrl_desc desc);
+    ButtonControl(vcap_dev* vd, vcap_ctrl_info info);
     virtual ~ButtonControl() {}
 
     QWidget* widget() {

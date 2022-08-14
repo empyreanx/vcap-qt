@@ -28,7 +28,7 @@ class BooleanControl : public ControlWrapper {
     Q_OBJECT
 
 public:
-    BooleanControl(vcap_dev* vd, vcap_ctrl_desc desc);
+    BooleanControl(vcap_dev* vd, vcap_ctrl_info info);
     virtual ~BooleanControl() {}
 
     QWidget* widget() {
