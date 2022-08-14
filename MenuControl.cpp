@@ -17,7 +17,7 @@
 #include <QDebug>
 #include "Utils.hpp"
 
-MenuControl::MenuControl(vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd, info) {
+MenuControl::MenuControl(MainWindow& win, vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd, info), win_(win) {
     vcap_menu_item item;
     vcap_menu_itr itr = vcap_new_menu_itr(vd, info.id);
 
@@ -38,6 +38,8 @@ void MenuControl::setValue(int index) {
     } else {
         emit changed();
     }
+
+    win_.checkControls();
 }
 
 void MenuControl::check() {
@@ -61,7 +63,16 @@ void MenuControl::update() {
     if (vcap_get_ctrl(vd_, info_.id, &value) == -1)
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
 
+    int index = 0;
+
+    for (int i = 0; i < comboBox_.count(); i++) {
+        if (comboBox_.itemData(i).toUInt() == value) {
+            index = i;
+            break;
+        }
+    }
+
     comboBox_.blockSignals(true);
-    comboBox_.setCurrentIndex(value);
+    comboBox_.setCurrentIndex(index);
     comboBox_.blockSignals(false);
 }

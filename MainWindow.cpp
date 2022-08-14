@@ -311,7 +311,7 @@ void MainWindow::addControls() {
             break;
 
         case V4L2_CTRL_TYPE_MENU:
-            controls_.emplace_back(new MenuControl(vd_, info));
+            controls_.emplace_back(new MenuControl(*this, vd_, info));
             break;
 
         case V4L2_CTRL_TYPE_BUTTON:

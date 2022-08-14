@@ -63,10 +63,12 @@ private slots:
 
     void snapshot();
 
+public:
+    void checkControls();
+
 private:
     void addControls();
     void removeControls();
-    void checkControls();
     void updateControls();
 
     void addFrameSizes();
