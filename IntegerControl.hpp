@@ -18,7 +18,7 @@
 #include <QObject>
 #include <QSlider>
 
-#include <vcap/vcap.h>
+#include <vcap.h>
 
 #include "ControlWrapper.hpp"
 

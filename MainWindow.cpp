@@ -33,11 +33,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
         result = vcap_enum_devices(index, &info);
 
-        if (result == VCAP_ENUM_ERROR) {
-            QMessageBox::critical(this, tr("Error"), vcap_get_global_error());
-            QApplication::quit();
-        }
-
         if (result == VCAP_ENUM_OK) {
             devices_.push_back(info);
         }
@@ -182,6 +177,7 @@ void MainWindow::resetControls() {
         QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
     }
 
+    //checkControls();
     updateControls();
     checkControls();
 }
@@ -311,7 +307,7 @@ void MainWindow::addControls() {
             break;
 
         case V4L2_CTRL_TYPE_MENU:
-            controls_.emplace_back(new MenuControl(*this, vd_, info));
+            controls_.emplace_back(new MenuControl(vd_, info));
             break;
 
         case V4L2_CTRL_TYPE_BUTTON:
@@ -339,6 +335,7 @@ void MainWindow::addControls() {
 }
 
 void MainWindow::controlChanged() {
+    //updateControls();
     checkControls();
 }
 

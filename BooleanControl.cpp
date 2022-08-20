@@ -38,7 +38,9 @@ void BooleanControl::check() {
         checkBox_.setDisabled(false);
     }
 
-    if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_DISABLED || status == VCAP_CTRL_INACTIVE)
+    if (status == VCAP_CTRL_READ_ONLY ||
+        status == VCAP_CTRL_DISABLED  ||
+        status == VCAP_CTRL_INACTIVE)
         checkBox_.setDisabled(true);
 }
 

@@ -26,7 +26,7 @@
 #include <QThread>
 #include <QWidget>
 
-#include <vcap/vcap.h>
+#include <vcap.h>
 
 #include "BooleanControl.hpp"
 #include "ButtonControl.hpp"

@@ -17,7 +17,7 @@
 #include <QDebug>
 #include "Utils.hpp"
 
-MenuControl::MenuControl(MainWindow& win, vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd, info), win_(win) {
+MenuControl::MenuControl(vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd, info) {
     vcap_menu_item item;
     vcap_menu_itr itr = vcap_new_menu_itr(vd, info.id);
 
@@ -38,8 +38,6 @@ void MenuControl::setValue(int index) {
     } else {
         emit changed();
     }
-
-    win_.checkControls();
 }
 
 void MenuControl::check() {
@@ -53,7 +51,9 @@ void MenuControl::check() {
         comboBox_.setDisabled(false);
     }
 
-    if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_DISABLED || status == VCAP_CTRL_INACTIVE)
+    if (status == VCAP_CTRL_READ_ONLY ||
+        status == VCAP_CTRL_DISABLED  ||
+        status == VCAP_CTRL_INACTIVE)
         comboBox_.setDisabled(true);
 }
 

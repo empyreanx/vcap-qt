@@ -20,7 +20,7 @@
 #include <QObject>
 #include <QPushButton>
 
-#include <vcap/vcap.h>
+#include <vcap.h>
 
 #include "ControlWrapper.hpp"
 

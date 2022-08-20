@@ -20,7 +20,7 @@
 #include <QObject>
 #include <QCheckBox>
 
-#include <vcap/vcap.h>
+#include <vcap.h>
 
 #include "ControlWrapper.hpp"
 

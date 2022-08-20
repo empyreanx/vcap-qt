@@ -21,7 +21,7 @@
 #include <QObject>
 #include <QWidget>
 
-#include <vcap/vcap.h>
+#include <vcap.h>
 
 class ControlWrapper : public QObject {
     Q_OBJECT

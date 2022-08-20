@@ -28,7 +28,7 @@ class MenuControl : public ControlWrapper {
     Q_OBJECT
 
 public:
-    MenuControl(MainWindow& win, vcap_dev* vd, vcap_ctrl_info info);
+    MenuControl(vcap_dev* vd, vcap_ctrl_info info);
     virtual ~MenuControl() {}
 
     QWidget* widget() {
@@ -42,7 +42,6 @@ public slots:
     void setValue(int value);
 
 private:
-    MainWindow& win_;
     QComboBox comboBox_;
 };
 
