@@ -92,8 +92,8 @@ private:
 
     vcap_dev_info device_;
     vcap_dev* vd_;
-    size_t bufferSize_;
-    uint8_t* buffer_;
+    size_t imageSize_;
+    uint8_t* image_;
     vcap_rate frameRate_;
     vcap_size frameSize_;
 

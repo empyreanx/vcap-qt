@@ -15,7 +15,7 @@
 #include "MainWindow.hpp"
 #include "ui_MainWindow.h"
 
-#include <vcap/vcap.h>
+#include <vcap.h>
 
 #include <QFileDialog>
 #include <QTimerEvent>
@@ -33,11 +33,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
         result = vcap_enum_devices(index, &info);
 
-        if (result == VCAP_ENUM_OK) {
+        if (result == VCAP_OK) {
             devices_.push_back(info);
         }
 
-    } while (result != VCAP_ENUM_INVALID && ++index);
+    } while (result != VCAP_INVALID && ++index);
 
     if (devices_.size() == 0) {
         QMessageBox::critical(this, tr("Error"), tr("No cameras found!"));
@@ -50,6 +50,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     device_ = devices_[0];
     vd_ = vcap_create_device(devices_[0].path, true, 3);
+
+    if (!vd_) {
+        QMessageBox::critical(this, tr("Error"), "Unable to create video device");
+        QApplication::quit();
+    }
 
     connect(ui->actionStartCapture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
     connect(ui->actionStopCapture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
@@ -72,33 +77,28 @@ MainWindow::~MainWindow() {
 
 void MainWindow::startCapture() {
     if (!capturing_) {
-        if (-1 == vcap_open(vd_))
+        if (vcap_open(vd_) == -1)
         {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
             QApplication::quit();
         }
 
-        if (!vd_) {
-            QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
-            QApplication::quit();
-        }
-
-        vcap_size_itr itr = vcap_new_size_itr(vd_, V4L2_PIX_FMT_RGB24);
+        vcap_size_itr itr = vcap_new_size_itr(vd_, VCAP_FMT_RGB24);
 
         if (!vcap_size_itr_next(&itr, &frameSize_)) {
             QMessageBox::critical(this, tr("Error"), tr("Unable to get initial frame size"));
             QApplication::quit();
         }
 
-        if (vcap_set_fmt(vd_, V4L2_PIX_FMT_RGB24, frameSize_) == -1) {
+        if (vcap_set_fmt(vd_, VCAP_FMT_RGB24, frameSize_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
             QApplication::quit();
         }
 
-        bufferSize_ = vcap_get_buffer_size(vd_);
-        buffer_ = new uint8_t[bufferSize_];
+        imageSize_ = vcap_get_image_size(vd_);
+        image_ = new uint8_t[imageSize_];
 
-        if (!buffer_) {
+        if (!image_) {
             QMessageBox::critical(this, tr("Error"), "Memory allocation failed");
             QApplication::quit();
         }
@@ -120,7 +120,7 @@ void MainWindow::stopCapture() {
         killTimer(captureTimer_);
 
         vcap_stop_stream(vd_);
-        delete [] buffer_;
+        delete [] image_;
         vcap_close(vd_);
 
         removeControls();
@@ -189,7 +189,7 @@ void MainWindow::snapshot() {
 
 void MainWindow::timerEvent(QTimerEvent* event) {
     if (capturing_) {
-        if (vcap_grab(vd_, bufferSize_, buffer_) == -1) {
+        if (vcap_grab(vd_, imageSize_, image_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
             QApplication::quit();
         }
@@ -216,7 +216,7 @@ void MainWindow::timerEvent(QTimerEvent* event) {
                 }
             }*/
         } else {
-            displayImage(static_cast<int>(frameSize_.width), static_cast<int>(frameSize_.height), buffer_);
+            displayImage(static_cast<int>(frameSize_.width), static_cast<int>(frameSize_.height), image_);
         }
     }
 }
@@ -249,16 +249,16 @@ void MainWindow::switchSize(const QString &sizeStr) {
         uint32_t height = parts[1].toUInt();
         vcap_size size = { width, height };
 
-        if (vcap_set_fmt(vd_, V4L2_PIX_FMT_RGB24, size) == -1) {
+        if (vcap_set_fmt(vd_, VCAP_FMT_RGB24, size) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
             QApplication::quit();
         }
 
         frameSize_ = size;
 
-        delete [] buffer_;
-        bufferSize_ = vcap_get_buffer_size(vd_);
-        buffer_ = new uint8_t[bufferSize_];
+        delete [] image_;
+        imageSize_ = vcap_get_image_size(vd_);
+        image_ = new uint8_t[imageSize_];
 
         removeFrameRates();
         addFrameRates();
@@ -298,23 +298,23 @@ void MainWindow::addControls() {
 
     while (vcap_ctrl_itr_next(&itr, &info)) {
         switch (info.type) {
-        case V4L2_CTRL_TYPE_BOOLEAN:
+        case VCAP_CTRL_TYPE_BOOLEAN:
             controls_.emplace_back(new BooleanControl(vd_, info));
             break;
 
-        case V4L2_CTRL_TYPE_INTEGER:
+        case VCAP_CTRL_TYPE_INTEGER:
             controls_.emplace_back(new IntegerControl(vd_, info));
             break;
 
-        case V4L2_CTRL_TYPE_MENU:
+        case VCAP_CTRL_TYPE_MENU:
             controls_.emplace_back(new MenuControl(vd_, info));
             break;
 
-        case V4L2_CTRL_TYPE_BUTTON:
+        case VCAP_CTRL_TYPE_BUTTON:
             controls_.emplace_back(new ButtonControl(vd_, info));
             break;
 
-        case V4L2_CTRL_TYPE_INTEGER_MENU:
+        case VCAP_CTRL_TYPE_INTEGER_MENU:
             controls_.emplace_back(new IntegerMenuControl(vd_, info));
             break;
 
@@ -366,7 +366,7 @@ void MainWindow::updateControls() {
 
 void MainWindow::addFrameSizes() {
     vcap_size size;
-    vcap_size_itr itr = vcap_new_size_itr(vd_, V4L2_PIX_FMT_RGB24);
+    vcap_size_itr itr = vcap_new_size_itr(vd_, VCAP_FMT_RGB24);
 
     while (vcap_size_itr_next(&itr, &size)) {
         QString sizeStr = QString::number(size.width) + "x" + QString::number(size.height);
@@ -401,7 +401,7 @@ void MainWindow::updateFrameSize() {
 
 void MainWindow::addFrameRates() {
     vcap_rate rate;
-    vcap_rate_itr itr = vcap_new_rate_itr(vd_, V4L2_PIX_FMT_RGB24, frameSize_);
+    vcap_rate_itr itr = vcap_new_rate_itr(vd_, VCAP_FMT_RGB24, frameSize_);
 
     while (vcap_rate_itr_next(&itr, &rate)) {
         ui->frameRateComboBox->addItem(QString::number(rate.numerator) + "/" + QString::number(rate.denominator));
