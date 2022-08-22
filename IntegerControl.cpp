@@ -25,7 +25,13 @@ IntegerControl::IntegerControl(vcap_dev* vd, vcap_ctrl_info info) : ControlWrapp
 }
 
 void IntegerControl::check() {
-    int status = vcap_ctrl_status(vd_, info_.id);
+    vcap_ctrl_status status = 0;
+
+    if (vcap_get_ctrl_status(vd_, info_.id, &status) == VCAP_ERROR) {
+        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
+        return;
+    }
+
     bool enabled = slider_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
@@ -33,10 +39,9 @@ void IntegerControl::check() {
             update();
 
         slider_.setDisabled(false);
-    }
-
-    if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_DISABLED || status == VCAP_CTRL_INACTIVE)
+    } else {
         slider_.setDisabled(true);
+    }
 }
 
 void IntegerControl::update() {

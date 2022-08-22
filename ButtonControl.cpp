@@ -24,12 +24,16 @@ void ButtonControl::push() {
 }
 
 void ButtonControl::check() {
-    int status = vcap_ctrl_status(vd_, info_.id);
+    vcap_ctrl_status status = 0;
+
+    if (vcap_get_ctrl_status(vd_, info_.id, &status) == VCAP_ERROR) {
+        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
+        return;
+    }
 
     if (status == VCAP_CTRL_OK)
         button_.setDisabled(false);
-
-    if (status == VCAP_CTRL_READ_ONLY || status == VCAP_CTRL_DISABLED || status == VCAP_CTRL_INACTIVE)
+    else
         button_.setDisabled(true);
 }
 

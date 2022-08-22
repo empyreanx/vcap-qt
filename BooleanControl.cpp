@@ -28,7 +28,13 @@ void BooleanControl::setValue(bool value) {
 }
 
 void BooleanControl::check() {
-    int status = vcap_ctrl_status(vd_, info_.id);
+    vcap_ctrl_status status = 0;
+
+    if (vcap_get_ctrl_status(vd_, info_.id, &status) == VCAP_ERROR) {
+        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
+        return;
+    }
+
     bool enabled = checkBox_.isEnabled();
 
     if (status == VCAP_CTRL_OK) {
@@ -36,19 +42,19 @@ void BooleanControl::check() {
             update();
 
         checkBox_.setDisabled(false);
-    }
-
-    if (status == VCAP_CTRL_READ_ONLY ||
-        status == VCAP_CTRL_DISABLED  ||
-        status == VCAP_CTRL_INACTIVE)
+    } else {
         checkBox_.setDisabled(true);
+    }
 }
 
 void BooleanControl::update() {
     int32_t value;
 
     if (vcap_get_ctrl(vd_, info_.id, &value) == -1)
+    {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
+        return;
+    }
 
     checkBox_.blockSignals(true);
     checkBox_.setChecked(!!value);
