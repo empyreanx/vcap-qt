@@ -29,9 +29,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     int result;
 
     do {
-        vcap_dev_info info = {};
+        vcap_device_info info = {};
 
-        result = vcap_enum_devices(index, &info);
+        result = vcap_enumerate_devices(index, &info);
 
         if (result == VCAP_OK) {
             devices_.push_back(info);
@@ -56,11 +56,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         QApplication::quit();
     }
 
-    connect(ui->actionStartCapture, SIGNAL(triggered(bool)), this, SLOT(startCapture()));
-    connect(ui->actionStopCapture, SIGNAL(triggered(bool)), this, SLOT(stopCapture()));
-    connect(ui->actionImportSettings, SIGNAL(triggered(bool)), this, SLOT(importSettings()));
-    connect(ui->actionExportSettings, SIGNAL(triggered(bool)), this, SLOT(exportSettings()));
-    connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(quit()));
+    connect(ui->actionStartCapture, SIGNAL(triggered()), this, SLOT(startCapture()));
+    connect(ui->actionStopCapture, SIGNAL(triggered()), this, SLOT(stopCapture()));
+    connect(ui->actionImportSettings, SIGNAL(triggered()), this, SLOT(importSettings()));
+    connect(ui->actionExportSettings, SIGNAL(triggered()), this, SLOT(exportSettings()));
+    connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(quit()));
     connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(resetControls()));
     connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchCamera(QString)));
     connect(ui->sizeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchSize(QString)));
@@ -83,14 +83,16 @@ void MainWindow::startCapture() {
             QApplication::quit();
         }
 
-        vcap_size_itr itr = vcap_new_size_itr(vd_, VCAP_FMT_RGB24);
+        vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
 
-        if (!vcap_size_itr_next(&itr, &frameSize_)) {
+        if (!vcap_iterator_next(itr, &frameSize_)) {
             QMessageBox::critical(this, tr("Error"), tr("Unable to get initial frame size"));
             QApplication::quit();
         }
 
-        if (vcap_set_fmt(vd_, VCAP_FMT_RGB24, frameSize_) == -1) {
+        vcap_free_iterator(itr);
+
+        if (vcap_set_format(vd_, VCAP_FMT_RGB24, frameSize_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
             QApplication::quit();
         }
@@ -173,7 +175,7 @@ void MainWindow::quit() {
 }
 
 void MainWindow::resetControls() {
-    if (vcap_reset_all_ctrls(vd_) == -1) {
+    if (vcap_reset_all_controls(vd_) == -1) {
         QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
     }
 
@@ -249,7 +251,7 @@ void MainWindow::switchSize(const QString &sizeStr) {
         uint32_t height = parts[1].toUInt();
         vcap_size size = { width, height };
 
-        if (vcap_set_fmt(vd_, VCAP_FMT_RGB24, size) == -1) {
+        if (vcap_set_format(vd_, VCAP_FMT_RGB24, size) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
             QApplication::quit();
         }
@@ -293,10 +295,10 @@ void MainWindow::switchRate(const QString &rateStr) {
 }
 
 void MainWindow::addControls() {
-    vcap_ctrl_info info;
-    vcap_ctrl_itr itr = vcap_new_ctrl_itr(vd_);
+    vcap_control_info info;
+    vcap_iterator* itr = vcap_control_iterator(vd_);
 
-    while (vcap_ctrl_itr_next(&itr, &info)) {
+    while (vcap_iterator_next(itr, &info)) {
         switch (info.type) {
         case VCAP_CTRL_TYPE_BOOLEAN:
             controls_.emplace_back(new BooleanControl(vd_, info));
@@ -314,10 +316,6 @@ void MainWindow::addControls() {
             controls_.emplace_back(new ButtonControl(vd_, info));
             break;
 
-        case VCAP_CTRL_TYPE_INTEGER_MENU:
-            controls_.emplace_back(new IntegerMenuControl(vd_, info));
-            break;
-
         default:
             continue;
         }
@@ -326,8 +324,10 @@ void MainWindow::addControls() {
         connect(controls_.back().get(), SIGNAL(changed()), this, SLOT(controlChanged()));
     }
 
-    if (vcap_itr_error(&itr))
+    if (vcap_iterator_error(itr))
         QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
+
+    vcap_free_iterator(itr);
 
     for (unsigned i = 0; i < controls_.size(); i++) {
         controls_[i]->check();
@@ -366,15 +366,17 @@ void MainWindow::updateControls() {
 
 void MainWindow::addFrameSizes() {
     vcap_size size;
-    vcap_size_itr itr = vcap_new_size_itr(vd_, VCAP_FMT_RGB24);
+    vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
 
-    while (vcap_size_itr_next(&itr, &size)) {
+    while (vcap_iterator_next(itr, &size)) {
         QString sizeStr = QString::number(size.width) + "x" + QString::number(size.height);
         ui->sizeComboBox->addItem(sizeStr);
     }
 
-    if (vcap_itr_error(&itr))
+    if (vcap_iterator_error(itr))
         QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
+
+    vcap_free_iterator(itr);
 
     updateFrameSize();
 }
@@ -386,8 +388,8 @@ void MainWindow::removeFrameSizes() {
 }
 
 void MainWindow::updateFrameSize() {
-    vcap_fmt_id id;
-    vcap_get_fmt(vd_, &id, &frameSize_);
+    vcap_format_id id;
+    vcap_get_format(vd_, &id, &frameSize_);
 
     QString sizeStr = QString::number(frameSize_.width) + "x" + QString::number(frameSize_.height);
 
@@ -401,14 +403,18 @@ void MainWindow::updateFrameSize() {
 
 void MainWindow::addFrameRates() {
     vcap_rate rate;
-    vcap_rate_itr itr = vcap_new_rate_itr(vd_, VCAP_FMT_RGB24, frameSize_);
+    vcap_iterator* itr = vcap_rate_iterator(vd_, VCAP_FMT_RGB24, frameSize_);
 
-    while (vcap_rate_itr_next(&itr, &rate)) {
+    while (vcap_iterator_next(itr, &rate)) {
         ui->frameRateComboBox->addItem(QString::number(rate.numerator) + "/" + QString::number(rate.denominator));
     }
 
-    if (vcap_itr_error(&itr))
+    // TODO: check error
+
+    if (vcap_iterator_error(itr))
         QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
+
+    vcap_free_iterator(itr);
 
     updateFrameRate();
 }

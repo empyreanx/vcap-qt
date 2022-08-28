@@ -32,7 +32,6 @@
 #include "ButtonControl.hpp"
 #include "ControlWrapper.hpp"
 #include "IntegerControl.hpp"
-#include "IntegerMenuControl.hpp"
 #include "MenuControl.hpp"
 
 #include "Utils.hpp"
@@ -90,14 +89,17 @@ private:
 
     bool capturing_;
 
-    vcap_dev_info device_;
-    vcap_dev* vd_;
+    vcap_device_info device_;
+    vcap_device* vd_;
+
+    /*vcap_device_info device_;
+    vcap_device* vd_;*/
     size_t imageSize_;
     uint8_t* image_;
     vcap_rate frameRate_;
     vcap_size frameSize_;
 
-    std::vector<vcap_dev_info> devices_;
+    std::vector<vcap_device_info> devices_;
     std::vector<std::unique_ptr<ControlWrapper>> controls_;
 
     void displayImage(int width, int height, unsigned char *data);

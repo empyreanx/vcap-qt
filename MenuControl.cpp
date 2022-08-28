@@ -17,13 +17,17 @@
 #include <QDebug>
 #include "Utils.hpp"
 
-MenuControl::MenuControl(vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd, info) {
+MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapper(vd, info) {
     vcap_menu_item item;
-    vcap_menu_itr itr = vcap_new_menu_itr(vd, info.id);
+    vcap_iterator* itr = vcap_menu_iterator(vd, info.id);
 
-    while (vcap_menu_itr_next(&itr, &item)) {
+    while (vcap_iterator_next(itr, &item)) {
         comboBox_.addItem(reinterpret_cast<char*>(item.name), item.index);
     }
+
+    //TODO: check error
+
+    vcap_free_iterator(itr);
 
     update();
 
@@ -33,7 +37,7 @@ MenuControl::MenuControl(vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd,
 void MenuControl::setValue(int index) {
     int value = comboBox_.itemData(index).toInt();
 
-    if (vcap_set_ctrl(vd_, info_.id, value) == -1) {
+    if (vcap_set_control(vd_, info_.id, value) == -1) {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
     } else {
         emit changed();
@@ -41,16 +45,16 @@ void MenuControl::setValue(int index) {
 }
 
 void MenuControl::check() {
-    vcap_ctrl_status status = 0;
+    vcap_control_status status = 0;
 
-    if (vcap_get_ctrl_status(vd_, info_.id, &status) == VCAP_ERROR) {
+    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR) {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
         return;
     }
 
     bool enabled = comboBox_.isEnabled();
 
-    if (status == VCAP_CTRL_OK) {
+    if (status == VCAP_CTRL_STATUS_OK) {
         if (!enabled)
             update();
 
@@ -63,7 +67,7 @@ void MenuControl::check() {
 void MenuControl::update() {
     int32_t value;
 
-    if (vcap_get_ctrl(vd_, info_.id, &value) == -1)
+    if (vcap_get_control(vd_, info_.id, &value) == -1)
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
 
     int index = 0;

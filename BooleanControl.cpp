@@ -14,13 +14,13 @@
 
 #include "BooleanControl.hpp"
 
-BooleanControl::BooleanControl(vcap_dev* vd, vcap_ctrl_info info) : ControlWrapper(vd, info) {
+BooleanControl::BooleanControl(vcap_device* vd, vcap_control_info info) : ControlWrapper(vd, info) {
     update();
     connect(&checkBox_, SIGNAL(clicked(bool)), this, SLOT(setValue(bool)));
 }
 
 void BooleanControl::setValue(bool value) {
-    if (vcap_set_ctrl(vd_, info_.id, value ? 1 : 0) == -1) {
+    if (vcap_set_control(vd_, info_.id, value ? 1 : 0) == -1) {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
     } else {
         emit changed();
@@ -28,16 +28,16 @@ void BooleanControl::setValue(bool value) {
 }
 
 void BooleanControl::check() {
-    vcap_ctrl_status status = 0;
+    vcap_control_status status = 0;
 
-    if (vcap_get_ctrl_status(vd_, info_.id, &status) == VCAP_ERROR) {
+    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR) {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
         return;
     }
 
     bool enabled = checkBox_.isEnabled();
 
-    if (status == VCAP_CTRL_OK) {
+    if (status == VCAP_CTRL_STATUS_OK) {
         if (!enabled)
             update();
 
@@ -50,7 +50,7 @@ void BooleanControl::check() {
 void BooleanControl::update() {
     int32_t value;
 
-    if (vcap_get_ctrl(vd_, info_.id, &value) == -1)
+    if (vcap_get_control(vd_, info_.id, &value) == -1)
     {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
         return;

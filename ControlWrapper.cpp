@@ -14,11 +14,11 @@
 
 #include "ControlWrapper.hpp"
 
-ControlWrapper::ControlWrapper(vcap_dev* vd, vcap_ctrl_info info) : QObject(nullptr), vd_(vd), info_(info) {
+ControlWrapper::ControlWrapper(vcap_device* vd, vcap_control_info info) : QObject(nullptr), vd_(vd), info_(info) {
 }
 
 void ControlWrapper::setValue(int value) {
-    if (vcap_set_ctrl(vd_, info_.id, value) == -1) {
+    if (vcap_set_control(vd_, info_.id, value) == -1) {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
     } else {
         emit changed();
