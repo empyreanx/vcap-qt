@@ -12,20 +12,18 @@
     GNU General Public License for more details.
 */
 
-#include "MenuControl.hpp"
+#include "IntegerMenuControl.hpp"
 
 #include <QDebug>
 #include "Utils.hpp"
 
-MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapper(vd, info) {
+IntegerMenuControl::IntegerMenuControl(vcap_device *vd, vcap_control_info info) : ControlWrapper(vd, info) {
     vcap_menu_item item;
     vcap_iterator* itr = vcap_menu_iterator(vd, info.id);
 
     while (vcap_next_menu_item(itr, &item)) {
-        comboBox_.addItem(reinterpret_cast<char*>(item.label.str), item.index);
+        comboBox_.addItem(QString::number(item.label.num));
     }
-
-    //TODO: check error
 
     vcap_free_iterator(itr);
 
@@ -34,17 +32,7 @@ MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapp
     connect(&comboBox_, SIGNAL(currentIndexChanged(int)), this, SLOT(setValue(int)));
 }
 
-void MenuControl::setValue(int index) {
-    int value = comboBox_.itemData(index).toInt();
-
-    if (vcap_set_control(vd_, info_.id, value) == -1) {
-        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
-    } else {
-        emit changed();
-    }
-}
-
-void MenuControl::check() {
+void IntegerMenuControl::check() {
     vcap_control_status status = 0;
 
     if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR) {
@@ -59,27 +47,21 @@ void MenuControl::check() {
             update();
 
         comboBox_.setDisabled(false);
-    } else {
-        comboBox_.setDisabled(true);
     }
+
+    if (status == VCAP_CTRL_STATUS_READ_ONLY ||
+        status == VCAP_CTRL_STATUS_DISABLED  ||
+        status == VCAP_CTRL_STATUS_INACTIVE)
+        comboBox_.setDisabled(true);
 }
 
-void MenuControl::update() {
+void IntegerMenuControl::update() {
     int32_t value;
 
     if (vcap_get_control(vd_, info_.id, &value) == -1)
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
 
-    int index = 0;
-
-    for (int i = 0; i < comboBox_.count(); i++) {
-        if (comboBox_.itemData(i).toUInt() == value) {
-            index = i;
-            break;
-        }
-    }
-
     comboBox_.blockSignals(true);
-    comboBox_.setCurrentIndex(index);
+    comboBox_.setCurrentIndex(value);
     comboBox_.blockSignals(false);
 }

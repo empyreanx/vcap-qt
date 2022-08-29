@@ -33,6 +33,7 @@
 #include "ControlWrapper.hpp"
 #include "IntegerControl.hpp"
 #include "MenuControl.hpp"
+#include "IntegerMenuControl.hpp"
 
 #include "Utils.hpp"
 

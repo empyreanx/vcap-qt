@@ -316,6 +316,10 @@ void MainWindow::addControls() {
             controls_.emplace_back(new ButtonControl(vd_, info));
             break;
 
+        case VCAP_CTRL_TYPE_INTEGER_MENU:
+            controls_.emplace_back(new IntegerMenuControl(vd_, info));
+            break;
+
         default:
             continue;
         }
