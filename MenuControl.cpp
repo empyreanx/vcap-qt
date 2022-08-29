@@ -21,7 +21,7 @@ MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapp
     vcap_menu_item item;
     vcap_iterator* itr = vcap_menu_iterator(vd, info.id);
 
-    while (vcap_iterator_next(itr, &item)) {
+    while (vcap_next_menu_item(itr, &item)) {
         comboBox_.addItem(reinterpret_cast<char*>(item.name), item.index);
     }
 

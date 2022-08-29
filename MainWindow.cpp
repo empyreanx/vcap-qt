@@ -85,7 +85,7 @@ void MainWindow::startCapture() {
 
         vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
 
-        if (!vcap_iterator_next(itr, &frameSize_)) {
+        if (!vcap_next_size(itr, &frameSize_)) {
             QMessageBox::critical(this, tr("Error"), tr("Unable to get initial frame size"));
             QApplication::quit();
         }
@@ -298,7 +298,7 @@ void MainWindow::addControls() {
     vcap_control_info info;
     vcap_iterator* itr = vcap_control_iterator(vd_);
 
-    while (vcap_iterator_next(itr, &info)) {
+    while (vcap_next_control(itr, &info)) {
         switch (info.type) {
         case VCAP_CTRL_TYPE_BOOLEAN:
             controls_.emplace_back(new BooleanControl(vd_, info));
@@ -368,7 +368,7 @@ void MainWindow::addFrameSizes() {
     vcap_size size;
     vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
 
-    while (vcap_iterator_next(itr, &size)) {
+    while (vcap_next_size(itr, &size)) {
         QString sizeStr = QString::number(size.width) + "x" + QString::number(size.height);
         ui->sizeComboBox->addItem(sizeStr);
     }
@@ -405,11 +405,9 @@ void MainWindow::addFrameRates() {
     vcap_rate rate;
     vcap_iterator* itr = vcap_rate_iterator(vd_, VCAP_FMT_RGB24, frameSize_);
 
-    while (vcap_iterator_next(itr, &rate)) {
+    while (vcap_next_rate(itr, &rate)) {
         ui->frameRateComboBox->addItem(QString::number(rate.numerator) + "/" + QString::number(rate.denominator));
     }
-
-    // TODO: check error
 
     if (vcap_iterator_error(itr))
         QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
