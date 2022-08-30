@@ -33,26 +33,23 @@ IntegerMenuControl::IntegerMenuControl(vcap_device *vd, vcap_control_info info) 
 }
 
 void IntegerMenuControl::check() {
-    vcap_control_status status = 0;
+    vcap_control_info info;
 
-    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR) {
+    if (vcap_get_control_info(vd_, info_.id, &info) == VCAP_ERROR) {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
         return;
     }
 
     bool enabled = comboBox_.isEnabled();
 
-    if (status == VCAP_CTRL_STATUS_OK) {
+    if (!info.read_only && !info.write_only && !info.disabled && !info.inactive) {
         if (!enabled)
             update();
 
         comboBox_.setDisabled(false);
-    }
-
-    if (status == VCAP_CTRL_STATUS_READ_ONLY ||
-        status == VCAP_CTRL_STATUS_DISABLED  ||
-        status == VCAP_CTRL_STATUS_INACTIVE)
+    } else {
         comboBox_.setDisabled(true);
+    }
 }
 
 void IntegerMenuControl::update() {
