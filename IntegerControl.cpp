@@ -25,16 +25,16 @@ IntegerControl::IntegerControl(vcap_device* vd, vcap_control_info info) : Contro
 }
 
 void IntegerControl::check() {
-    vcap_control_info info;
+    vcap_control_status status;
 
-    if (vcap_get_control_info(vd_, info_.id, &info) == VCAP_ERROR) {
+    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR) {
         std::cout << std::string(vcap_get_error(vd_)) << std::endl;
         return;
     }
 
     bool enabled = slider_.isEnabled();
 
-    if (!info.read_only && !info.write_only && !info.disabled && !info.inactive) {
+    if (!status.read_only && !status.write_only && !status.disabled && !status.inactive) {
         if (!enabled)
                 update();
 
