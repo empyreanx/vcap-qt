@@ -109,7 +109,10 @@ void MainWindow::startCapture() {
         addFrameSizes();
         addFrameRates();
 
-        vcap_start_stream(vd_);
+        if (vcap_start_stream(vd_)  == VCAP_ERROR) {
+            QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
+            QApplication::quit();
+        }
 
         captureTimer_ = startTimer(0);
         capturing_ = true;
@@ -121,7 +124,6 @@ void MainWindow::stopCapture() {
         capturing_ = false;
         killTimer(captureTimer_);
 
-        vcap_stop_stream(vd_);
         delete [] image_;
         vcap_close(vd_);
 
@@ -191,8 +193,9 @@ void MainWindow::snapshot() {
 
 void MainWindow::timerEvent(QTimerEvent* event) {
     if (capturing_) {
-        if (vcap_grab(vd_, imageSize_, image_) == -1) {
+        if (vcap_capture(vd_, imageSize_, image_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
+            stopCapture();
             QApplication::quit();
         }
 
