@@ -35,6 +35,7 @@
 #include "IntegerControl.hpp"
 #include "MenuControl.hpp"
 #include "IntegerMenuControl.hpp"
+#include "Stopwatch.hpp"
 
 #include "Utils.hpp"
 
@@ -86,6 +87,8 @@ protected:
 private:
     Ui::MainWindow* ui;
 
+    Stopwatch stopwatch_;
+    double avgDelta_;
     QStatusBar statusBar_;
 
     int captureTimer_;
@@ -96,8 +99,6 @@ private:
     vcap_device_info device_;
     vcap_device* vd_;
 
-    /*vcap_device_info device_;
-    vcap_device* vd_;*/
     size_t imageSize_;
     uint8_t* image_;
     vcap_rate frameRate_;

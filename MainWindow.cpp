@@ -22,9 +22,7 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-
     setStatusBar(&statusBar_);
-    statusBar_.showMessage("Test");
 
     capturing_ = false;
 
@@ -80,6 +78,9 @@ MainWindow::~MainWindow() {
 
 void MainWindow::startCapture() {
     if (!capturing_) {
+        avgDelta_ = 0.0;
+        stopwatch_.reset();
+
         if (vcap_open(vd_) == -1)
         {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
@@ -196,6 +197,17 @@ void MainWindow::snapshot() {
 
 void MainWindow::timerEvent(QTimerEvent* event) {
     if (capturing_) {
+        double delta = stopwatch_.stop();
+
+        avgDelta_ = 0.25 * delta + 0.75 * avgDelta_;
+
+        stopwatch_.start();
+
+        if (avgDelta_ > 0.0)
+            statusBar_.showMessage(QString("FPS: ") + QString::number(1.0 / avgDelta_));
+        else
+            statusBar_.showMessage("FPS: 0.0");
+
         if (vcap_capture(vd_, imageSize_, image_) == -1) {
             QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
             stopCapture();

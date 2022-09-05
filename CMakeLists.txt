@@ -38,6 +38,8 @@ add_executable(vcap-qt
     ButtonControl.cpp
     MainWindow.hpp
     MainWindow.cpp
+    Stopwatch.hpp
+    Stopwatch.cpp
 )
 
 target_include_directories(vcap-qt PUBLIC /usr/local/include)
