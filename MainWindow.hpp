@@ -22,6 +22,7 @@
 #include <QDebug>
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QStatusBar>
 #include <QString>
 #include <QThread>
 #include <QWidget>
@@ -84,6 +85,8 @@ protected:
 
 private:
     Ui::MainWindow* ui;
+
+    QStatusBar statusBar_;
 
     int captureTimer_;
     int snapshotTimer_;
