@@ -23,7 +23,8 @@
 
 #include <vcap.h>
 
-class ControlWrapper : public QObject {
+class ControlWrapper : public QObject
+{
     Q_OBJECT
 
 public:

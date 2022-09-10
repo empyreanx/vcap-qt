@@ -25,6 +25,8 @@ add_executable(vcap-qt
     Application.hpp
     Utils.hpp
     Utils.cpp
+    IteratorDeleter.cpp
+    IteratorDeleter.hpp
     ControlWrapper.hpp
     ControlWrapper.cpp
     BooleanControl.hpp

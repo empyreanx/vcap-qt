@@ -22,7 +22,8 @@
 
 #include "ControlWrapper.hpp"
 
-class IntegerControl : public ControlWrapper {
+class IntegerControl : public ControlWrapper
+{
     Q_OBJECT
 
 public:

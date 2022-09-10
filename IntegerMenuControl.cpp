@@ -17,7 +17,8 @@
 #include <QDebug>
 #include "Utils.hpp"
 
-IntegerMenuControl::IntegerMenuControl(vcap_device *vd, vcap_control_info info) : ControlWrapper(vd, info) {
+IntegerMenuControl::IntegerMenuControl(vcap_device *vd, vcap_control_info info) : ControlWrapper(vd, info)
+{
     vcap_menu_item item;
     vcap_iterator* itr = vcap_menu_iterator(vd, info.id);
 
@@ -32,10 +33,11 @@ IntegerMenuControl::IntegerMenuControl(vcap_device *vd, vcap_control_info info) 
     connect(&comboBox_, SIGNAL(currentIndexChanged(int)), this, SLOT(setValue(int)));
 }
 
-void IntegerMenuControl::check() {
+void IntegerMenuControl::check()
+{
     vcap_control_status status;
 
-    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR)
+    if (vcap_get_control_status(vd_, info_.id, &status) != VCAP_OK)
         throw std::runtime_error(vcap_get_error(vd_));
 
     bool enabled = comboBox_.isEnabled();
@@ -53,10 +55,11 @@ void IntegerMenuControl::check() {
     }
 }
 
-void IntegerMenuControl::update() {
+void IntegerMenuControl::update()
+{
     int32_t value;
 
-    if (vcap_get_control(vd_, info_.id, &value) == VCAP_ERROR)
+    if (vcap_get_control(vd_, info_.id, &value) != VCAP_OK)
         throw std::runtime_error(vcap_get_error(vd_));
 
     comboBox_.blockSignals(true);

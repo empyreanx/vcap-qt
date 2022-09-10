@@ -14,12 +14,14 @@
 
 #include "Utils.hpp"
 
-QImage colorToQImage(int width, int height, std::uint8_t* data) {
+QImage colorToQImage(int width, int height, std::uint8_t* data)
+{
     QImage qImage(data, width, height, QImage::Format_RGB888);
     return qImage;
 }
 
-QImage grayscaleToQImage(int width, int height, std::uint8_t* data) {
+QImage grayscaleToQImage(int width, int height, std::uint8_t* data)
+{
     QImage qImage(data, width, height, QImage::Format_Indexed8);
 
     QVector<QRgb> colorTable;

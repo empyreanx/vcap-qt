@@ -20,7 +20,8 @@
 #include <QFileDialog>
 #include <QTimerEvent>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), capturing_(false), vd_(nullptr) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), capturing_(false), vd_(nullptr)
+{
     ui->setupUi(this);
 
     addDevices();
@@ -44,7 +45,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     setStatusBar(&statusBar_);
 }
 
-MainWindow::~MainWindow() {
+MainWindow::~MainWindow()
+{
     if (capturing_)
         stopCapture();
 
@@ -55,7 +57,8 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::startCapture() {
-    if (!capturing_) {
+    if (!capturing_)
+    {
         avgDelta_ = 0.0;
         stopwatch_.reset();
 
@@ -69,7 +72,7 @@ void MainWindow::startCapture() {
 
         vcap_free_iterator(itr);
 
-        if (vcap_set_format(vd_, VCAP_FMT_RGB24, frameSize_) == -1)
+        if (vcap_set_format(vd_, VCAP_FMT_RGB24, frameSize_) != VCAP_OK)
             throw std::runtime_error(vcap_get_error(vd_));
 
         imageSize_ = vcap_get_image_size(vd_);
@@ -90,7 +93,8 @@ void MainWindow::startCapture() {
     }
 }
 
-void MainWindow::stopCapture() {
+void MainWindow::stopCapture()
+{
     if (capturing_) {
         capturing_ = false;
         killTimer(captureTimer_);
@@ -104,8 +108,10 @@ void MainWindow::stopCapture() {
     }
 }
 
-void MainWindow::importSettings() {
-    if (capturing_) {
+void MainWindow::importSettings()
+{
+    if (capturing_)
+    {
         /*QString fileName = QFileDialog::getOpenFileName(this,
                                                         "Import Settings",
                                                         QDir::currentPath(),
@@ -125,8 +131,10 @@ void MainWindow::importSettings() {
     }
 }
 
-void MainWindow::exportSettings() {
-    if (capturing_) {
+void MainWindow::exportSettings()
+{
+    if (capturing_)
+    {
         /*QString fileName = QFileDialog::getSaveFileName(this,
                                                         "Export Settings",
                                                         QDir::currentPath() + "/settings.json",
@@ -147,7 +155,8 @@ void MainWindow::quit() {
     QCoreApplication::quit();
 }
 
-void MainWindow::resetControls() {
+void MainWindow::resetControls()
+{
     if (vcap_reset_all_controls(vd_) == -1) {
         QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
     }
@@ -205,11 +214,12 @@ void MainWindow::timerEvent(QTimerEvent* event) {
     }
 }
 
-void MainWindow::switchCamera(const QString &device_path) {
+void MainWindow::switchCamera(const QString &device_path)
+{
     bool wasCapturing = capturing_;
 
-        if (capturing_)
-            stopCapture();
+    if (capturing_)
+        stopCapture();
 
     for (unsigned i = 0; i < devices_.size(); i++)
     {
@@ -233,8 +243,10 @@ void MainWindow::switchCamera(const QString &device_path) {
         startCapture();
 }
 
-void MainWindow::switchSize(const QString &sizeStr) {
-    if (capturing_) {
+void MainWindow::switchSize(const QString &sizeStr)
+{
+    if (capturing_)
+    {
         capturing_ = false;
         killTimer(captureTimer_);
 
@@ -261,7 +273,8 @@ void MainWindow::switchSize(const QString &sizeStr) {
     }
 }
 
-void MainWindow::switchRate(const QString &rateStr) {
+void MainWindow::switchRate(const QString &rateStr)
+{
     if (capturing_) {
         capturing_ = false;
         killTimer(captureTimer_);
@@ -305,11 +318,13 @@ void MainWindow::addDevices()
         ui->cameraComboBox->addItem(devices_[i].path);
 }
 
-void MainWindow::addControls() {
+void MainWindow::addControls()
+{
     vcap_control_info info;
     vcap_iterator* itr = vcap_control_iterator(vd_);
 
-    while (vcap_next_control(itr, &info)) {
+    while (vcap_next_control(itr, &info))
+    {
         switch (info.type) {
         case VCAP_CTRL_TYPE_BOOLEAN:
             controls_.emplace_back(new BooleanControl(vd_, info));
@@ -347,12 +362,14 @@ void MainWindow::addControls() {
     checkControls();
 }
 
-void MainWindow::controlChanged() {
+void MainWindow::controlChanged()
+{
     //updateControls();
     checkControls();
 }
 
-void MainWindow::removeControls() {
+void MainWindow::removeControls()
+{
     // WARNING: The following constant may change if additional widgets are added to controlsForm
     const static int lastIndex = 14;
 
@@ -360,8 +377,10 @@ void MainWindow::removeControls() {
 
     QLayoutItem* item = nullptr;
 
-    while ((item = ui->controlsForm->itemAt(lastIndex)) != nullptr) {
-        if (item->widget()) {
+    while ((item = ui->controlsForm->itemAt(lastIndex)) != nullptr)
+    {
+        if (item->widget())
+        {
             delete item->widget();
         }
     }
@@ -379,11 +398,13 @@ void MainWindow::updateControls() {
     }
 }
 
-void MainWindow::addFrameSizes() {
+void MainWindow::addFrameSizes()
+{
     vcap_size size;
     vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
 
-    while (vcap_next_size(itr, &size)) {
+    while (vcap_next_size(itr, &size))
+    {
         QString sizeStr = QString::number(size.width) + "x" + QString::number(size.height);
         ui->sizeComboBox->addItem(sizeStr);
     }
@@ -396,13 +417,16 @@ void MainWindow::addFrameSizes() {
     updateFrameSize();
 }
 
-void MainWindow::removeFrameSizes() {
-    while (ui->sizeComboBox->count() > 0) {
+void MainWindow::removeFrameSizes()
+{
+    while (ui->sizeComboBox->count() > 0)
+    {
         ui->sizeComboBox->removeItem(0);
     }
 }
 
-void MainWindow::updateFrameSize() {
+void MainWindow::updateFrameSize()
+{
     vcap_format_id id;
 
     if (vcap_get_format(vd_, &id, &frameSize_) != VCAP_OK)
@@ -410,15 +434,18 @@ void MainWindow::updateFrameSize() {
 
     QString sizeStr = QString::number(frameSize_.width) + "x" + QString::number(frameSize_.height);
 
-    for (int i = 0; i < ui->sizeComboBox->count(); i++) {
-        if (ui->sizeComboBox->itemText(i) == sizeStr) {
+    for (int i = 0; i < ui->sizeComboBox->count(); i++)
+    {
+        if (ui->sizeComboBox->itemText(i) == sizeStr)
+        {
             ui->sizeComboBox->setCurrentIndex(i);
             break;
         }
     }
 }
 
-void MainWindow::addFrameRates() {
+void MainWindow::addFrameRates()
+{
     vcap_rate rate;
     vcap_iterator* itr = vcap_rate_iterator(vd_, VCAP_FMT_RGB24, frameSize_);
 
@@ -434,8 +461,10 @@ void MainWindow::addFrameRates() {
     updateFrameRate();
 }
 
-void MainWindow::removeFrameRates() {
-    while (ui->frameRateComboBox->count() > 0) {
+void MainWindow::removeFrameRates()
+{
+    while (ui->frameRateComboBox->count() > 0)
+    {
         ui->frameRateComboBox->removeItem(0);
     }
 }
@@ -446,15 +475,18 @@ void MainWindow::updateFrameRate() {
 
     QString frameRateStr = QString::number(frameRate_.numerator) + "/" + QString::number(frameRate_.denominator);
 
-    for (int i = 0; i < ui->sizeComboBox->count(); i++) {
-        if (ui->sizeComboBox->itemText(i) == frameRateStr) {
+    for (int i = 0; i < ui->sizeComboBox->count(); i++)
+    {
+        if (ui->sizeComboBox->itemText(i) == frameRateStr)
+        {
             ui->sizeComboBox->setCurrentIndex(i);
             break;
         }
     }
 }
 
-void MainWindow::displayImage(int width, int height, std::uint8_t* data) {
+void MainWindow::displayImage(int width, int height, std::uint8_t* data)
+{
     QImage qImage = colorToQImage(width, height, data);
     ui->videoImage->setPixmap(QPixmap::fromImage(qImage));
 }

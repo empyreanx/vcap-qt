@@ -15,56 +15,61 @@
 #include "MenuControl.hpp"
 
 #include <QDebug>
+
+#include "IteratorDeleter.hpp"
 #include "Utils.hpp"
 
-MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapper(vd, info) {
+MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapper(vd, info)
+{
     vcap_menu_item item;
-    vcap_iterator* itr = vcap_menu_iterator(vd, info.id);
 
-    while (vcap_next_menu_item(itr, &item)) {
+    std::unique_ptr<vcap_iterator, IteratorDeleter> itr(vcap_menu_iterator(vd, info.id));
+
+    while (vcap_next_menu_item(itr.get(), &item))
         comboBox_.addItem(reinterpret_cast<char*>(item.label.str), item.index);
-    }
-
-    //TODO: check error
-
-    vcap_free_iterator(itr);
 
     update();
 
     connect(&comboBox_, SIGNAL(currentIndexChanged(int)), this, SLOT(setValue(int)));
 }
 
-void MenuControl::setValue(int index) {
+void MenuControl::setValue(int index)
+{
     int value = comboBox_.itemData(index).toInt();
 
-    if (vcap_set_control(vd_, info_.id, value) == VCAP_ERROR)
+    if (vcap_set_control(vd_, info_.id, value) != VCAP_OK)
         throw std::runtime_error(vcap_get_error(vd_));
     else
         emit changed();
 }
 
-void MenuControl::check() {
+void MenuControl::check()
+{
     vcap_control_status status;
 
-    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR)
+    if (vcap_get_control_status(vd_, info_.id, &status) != VCAP_OK)
         throw std::runtime_error(vcap_get_error(vd_));
 
     bool enabled = comboBox_.isEnabled();
 
-    if (!status.read_only && !status.write_only && !status.disabled && !status.inactive) {
+    if (!status.read_only && !status.write_only && !status.disabled && !status.inactive)
+    {
         if (!enabled)
-                update();
+            update();
 
-           comboBox_.setDisabled(false);
-       } else {
-           comboBox_.setDisabled(true);
-      }
+        comboBox_.setDisabled(false);
+    }
+    else
+    {
+        comboBox_.setDisabled(true);
+    }
 }
 
-void MenuControl::update() {
+void MenuControl::update()
+{
     int32_t value;
 
-    if (vcap_get_control(vd_, info_.id, &value) == VCAP_ERROR)
+    if (vcap_get_control(vd_, info_.id, &value) != VCAP_OK)
         throw std::runtime_error(vcap_get_error(vd_));
 
     int index = 0;

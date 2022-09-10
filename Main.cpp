@@ -17,7 +17,8 @@
 #include "Application.hpp"
 #include "MainWindow.hpp"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     Application a(argc, argv);
 
     int code = 0;

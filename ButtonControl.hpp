@@ -24,7 +24,8 @@
 
 #include "ControlWrapper.hpp"
 
-class ButtonControl : public ControlWrapper {
+class ButtonControl : public ControlWrapper
+{
     Q_OBJECT
 
 public:

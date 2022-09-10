@@ -3,19 +3,22 @@
 #define PICO_TIME_IMPLEMENTATION
 #include "pico_time.h"
 
-Stopwatch::Stopwatch() : last(0) {
-
+Stopwatch::Stopwatch() : last(0)
+{
 }
 
-void Stopwatch::reset() {
+void Stopwatch::reset()
+{
     last = 0;
 }
 
-void Stopwatch::start() {
+void Stopwatch::start()
+{
     last = pt_now();
 }
 
-double Stopwatch::stop() {
+double Stopwatch::stop()
+{
     if (last == 0)
         return 0;
     else

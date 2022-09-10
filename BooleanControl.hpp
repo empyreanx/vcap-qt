@@ -24,7 +24,8 @@
 
 #include "ControlWrapper.hpp"
 
-class BooleanControl : public ControlWrapper {
+class BooleanControl : public ControlWrapper
+{
     Q_OBJECT
 
 public:

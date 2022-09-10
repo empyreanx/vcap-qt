@@ -21,7 +21,8 @@
 #include "ControlWrapper.hpp"
 #include "Utils.hpp"
 
-class IntegerMenuControl : public ControlWrapper {
+class IntegerMenuControl : public ControlWrapper
+{
     Q_OBJECT
 
 public:

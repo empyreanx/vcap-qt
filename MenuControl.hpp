@@ -24,7 +24,8 @@
 
 class MainWindow;
 
-class MenuControl : public ControlWrapper {
+class MenuControl : public ControlWrapper
+{
     Q_OBJECT
 
 public:

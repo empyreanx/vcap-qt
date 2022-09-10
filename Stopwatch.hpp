@@ -10,8 +10,7 @@ public:
 
     void reset();
     void start();
-    double stop()
-    ;
+    double stop();
 private:
     ptime_t last;
 };
