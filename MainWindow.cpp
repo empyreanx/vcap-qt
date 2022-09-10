@@ -20,42 +20,15 @@
 #include <QFileDialog>
 #include <QTimerEvent>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), capturing_(false), vd_(nullptr) {
     ui->setupUi(this);
-    setStatusBar(&statusBar_);
 
-    capturing_ = false;
+    addDevices();
 
-    int index = 0;
-    int result;
-
-    do {
-        vcap_device_info info = {};
-
-        result = vcap_enumerate_devices(index, &info);
-
-        if (result == VCAP_OK) {
-            devices_.push_back(info);
-        }
-
-    } while (result != VCAP_INVALID && ++index);
-
-    if (devices_.size() == 0) {
-        QMessageBox::critical(this, tr("Error"), tr("No cameras found!"));
-        QApplication::quit();
-    }
-
-    for (unsigned i = 0; i < devices_.size(); i++) {
-        ui->cameraComboBox->addItem(devices_[i].path);
-    }
-
-    device_ = devices_[0];
     vd_ = vcap_create_device(devices_[0].path, true, 3);
 
-    if (!vd_) {
-        QMessageBox::critical(this, tr("Error"), "Unable to create video device");
-        QApplication::quit();
-    }
+    if (!vd_)
+        throw std::runtime_error( "Unable to create video device");
 
     connect(ui->actionStartCapture, SIGNAL(triggered()), this, SLOT(startCapture()));
     connect(ui->actionStopCapture, SIGNAL(triggered()), this, SLOT(stopCapture()));
@@ -67,11 +40,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->sizeComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchSize(QString)));
     connect(ui->frameRateComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(switchRate(QString)));
     connect(ui->snapshotButton, SIGNAL(clicked()), this, SLOT(snapshot()));
+
+    setStatusBar(&statusBar_);
 }
 
 MainWindow::~MainWindow() {
     if (capturing_)
         stopCapture();
+
+    if (vd_)
+        vcap_destroy_device(vd_);
 
     delete ui;
 }
@@ -81,18 +59,18 @@ void MainWindow::startCapture() {
         avgDelta_ = 0.0;
         stopwatch_.reset();
 
-        if (vcap_open(vd_) == -1)
+        if (vcap_open(vd_) == VCAP_ERROR)
             throw std::runtime_error(vcap_get_error(vd_));
 
         vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
 
         if (!vcap_next_size(itr, &frameSize_))
-            throw std::runtime_error("Unable to get initial frame size");
+            throw std::runtime_error(std::string("Unable to get initial size: ") + vcap_get_error(vd_));
 
         vcap_free_iterator(itr);
 
         if (vcap_set_format(vd_, VCAP_FMT_RGB24, frameSize_) == -1)
-            throw std::runtime_error("Unable to get initial frame size");
+            throw std::runtime_error(vcap_get_error(vd_));
 
         imageSize_ = vcap_get_image_size(vd_);
         image_ = new uint8_t[imageSize_];
@@ -105,7 +83,7 @@ void MainWindow::startCapture() {
         addFrameRates();
 
         if (vcap_start_stream(vd_)  == VCAP_ERROR)
-            throw std::runtime_error("Unable to get initial frame size");
+            throw std::runtime_error(vcap_get_error(vd_));
 
         captureTimer_ = startTimer(0);
         capturing_ = true;
@@ -227,21 +205,32 @@ void MainWindow::timerEvent(QTimerEvent* event) {
     }
 }
 
-void MainWindow::switchCamera(const QString &device) {
-    /*bool wasCapturing = capturing_;
+void MainWindow::switchCamera(const QString &device_path) {
+    bool wasCapturing = capturing_;
 
         if (capturing_)
             stopCapture();
 
-    for (unsigned i = 0; i < devices_.size(); i++) {
-        if (devices_[i].path == device) {
-            device_ = devices_[i];
+    for (unsigned i = 0; i < devices_.size(); i++)
+    {
+        if (devices_[i].path == device_path)
+        {
+            if (vd_)
+                vcap_destroy_device(vd_);
+
+            uint32_t buffer_count = devices_[i].streaming ? 3 : 0;
+
+            vd_ = vcap_create_device(devices_[i].path, true, buffer_count);
+
+            if (!vd_)
+                throw std::runtime_error( "Unable to create video device");
+
             break;
         }
     }
 
     if (wasCapturing)
-        startCapture();*/
+        startCapture();
 }
 
 void MainWindow::switchSize(const QString &sizeStr) {
@@ -292,6 +281,28 @@ void MainWindow::switchRate(const QString &rateStr) {
         captureTimer_ = startTimer(0);
         capturing_ = true;
     }
+}
+
+void MainWindow::addDevices()
+{
+    int result, index = 0;
+
+    do
+    {
+        vcap_device_info info = {};
+
+        result = vcap_enumerate_devices(index, &info);
+
+        if (result == VCAP_OK)
+            devices_.push_back(info);
+    }
+    while (result != VCAP_INVALID && ++index);
+
+    if (devices_.size() == 0)
+        throw std::runtime_error("No cameras found");
+
+    for (unsigned i = 0; i < devices_.size(); i++)
+        ui->cameraComboBox->addItem(devices_[i].path);
 }
 
 void MainWindow::addControls() {

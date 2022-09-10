@@ -69,6 +69,8 @@ public:
     void checkControls();
 
 private:
+    void addDevices();
+
     void addControls();
     void removeControls();
     void updateControls();
@@ -87,16 +89,15 @@ protected:
 private:
     Ui::MainWindow* ui;
 
+    QStatusBar statusBar_;
+
     Stopwatch stopwatch_;
     double avgDelta_;
-    QStatusBar statusBar_;
 
     int captureTimer_;
     int snapshotTimer_;
 
     bool capturing_;
-
-    vcap_device_info device_;
     vcap_device* vd_;
 
     size_t imageSize_;

@@ -20,13 +20,13 @@
 int main(int argc, char *argv[]) {
     Application a(argc, argv);
 
-    MainWindow w;
-    w.show();
-    
     int code = 0;
 
     try
     {
+        MainWindow w;
+        w.show();
+
         code = a.run();
     }
     catch (const std::exception& e)
