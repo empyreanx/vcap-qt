@@ -21,6 +21,8 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_executable(vcap-qt
     MainWindow.ui
     Main.cpp
+    Application.cpp
+    Application.hpp
     Utils.hpp
     Utils.cpp
     ControlWrapper.hpp

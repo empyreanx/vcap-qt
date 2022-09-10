@@ -12,14 +12,28 @@
     GNU General Public License for more details.
 */
 
+#include <exception>
+
+#include "Application.hpp"
 #include "MainWindow.hpp"
-#include <QApplication>
 
 int main(int argc, char *argv[]) {
-    QApplication a(argc, argv);
+    Application a(argc, argv);
 
     MainWindow w;
     w.show();
     
-    return a.exec();
+    int code = 0;
+
+    try
+    {
+        code = a.run();
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::critical(0, "Error", e.what());
+        return EXIT_FAILURE;
+    }
+
+    return code;
 }

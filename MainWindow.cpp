@@ -82,41 +82,30 @@ void MainWindow::startCapture() {
         stopwatch_.reset();
 
         if (vcap_open(vd_) == -1)
-        {
-            QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
-            QApplication::quit();
-        }
+            throw std::runtime_error(vcap_get_error(vd_));
 
         vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
 
-        if (!vcap_next_size(itr, &frameSize_)) {
-            QMessageBox::critical(this, tr("Error"), tr("Unable to get initial frame size"));
-            QApplication::quit();
-        }
+        if (!vcap_next_size(itr, &frameSize_))
+            throw std::runtime_error("Unable to get initial frame size");
 
         vcap_free_iterator(itr);
 
-        if (vcap_set_format(vd_, VCAP_FMT_RGB24, frameSize_) == -1) {
-            QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
-            QApplication::quit();
-        }
+        if (vcap_set_format(vd_, VCAP_FMT_RGB24, frameSize_) == -1)
+            throw std::runtime_error("Unable to get initial frame size");
 
         imageSize_ = vcap_get_image_size(vd_);
         image_ = new uint8_t[imageSize_];
 
-        if (!image_) {
-            QMessageBox::critical(this, tr("Error"), "Memory allocation failed");
-            QApplication::quit();
-        }
+        if (!image_)
+            throw std::bad_alloc();
 
         addControls();
         addFrameSizes();
         addFrameRates();
 
-        if (vcap_start_stream(vd_)  == VCAP_ERROR) {
-            QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
-            QApplication::quit();
-        }
+        if (vcap_start_stream(vd_)  == VCAP_ERROR)
+            throw std::runtime_error("Unable to get initial frame size");
 
         captureTimer_ = startTimer(0);
         capturing_ = true;
@@ -198,9 +187,7 @@ void MainWindow::snapshot() {
 void MainWindow::timerEvent(QTimerEvent* event) {
     if (capturing_) {
         double delta = stopwatch_.stop();
-
         avgDelta_ = 0.25 * delta + 0.75 * avgDelta_;
-
         stopwatch_.start();
 
         if (avgDelta_ > 0.0)
@@ -209,9 +196,8 @@ void MainWindow::timerEvent(QTimerEvent* event) {
             statusBar_.showMessage("FPS: 0.0");
 
         if (vcap_capture(vd_, imageSize_, image_) == -1) {
-            QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
             stopCapture();
-            QApplication::quit();
+            throw std::runtime_error(vcap_get_error(vd_));
         }
 
         if (event->timerId() == snapshotTimer_) {
@@ -269,10 +255,8 @@ void MainWindow::switchSize(const QString &sizeStr) {
         uint32_t height = parts[1].toUInt();
         vcap_size size = { width, height };
 
-        if (vcap_set_format(vd_, VCAP_FMT_RGB24, size) == -1) {
-            QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
-            QApplication::quit();
-        }
+        if (vcap_set_format(vd_, VCAP_FMT_RGB24, size) == -1)
+            throw std::runtime_error(vcap_get_error(vd_));
 
         frameSize_ = size;
 
@@ -300,10 +284,8 @@ void MainWindow::switchRate(const QString &rateStr) {
 
         vcap_rate rate = { numerator, denominator };
 
-        if (vcap_set_rate(vd_, rate) == -1) {
-            QMessageBox::critical(this, tr("Error"), vcap_get_error(vd_));
-            QApplication::quit();
-        }
+        if (vcap_set_rate(vd_, rate) == -1)
+            throw std::runtime_error(vcap_get_error(vd_));
 
         frameRate_ = rate;
 
@@ -347,13 +329,11 @@ void MainWindow::addControls() {
     }
 
     if (vcap_iterator_error(itr))
-        QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
+        throw std::runtime_error(vcap_get_error(vd_));
 
     vcap_free_iterator(itr);
 
-    for (unsigned i = 0; i < controls_.size(); i++) {
-        controls_[i]->check();
-    }
+    checkControls();
 }
 
 void MainWindow::controlChanged() {
@@ -396,7 +376,7 @@ void MainWindow::addFrameSizes() {
     }
 
     if (vcap_iterator_error(itr))
-        QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
+        throw std::runtime_error(vcap_get_error(vd_));
 
     vcap_free_iterator(itr);
 
