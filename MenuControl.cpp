@@ -37,20 +37,17 @@ MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapp
 void MenuControl::setValue(int index) {
     int value = comboBox_.itemData(index).toInt();
 
-    if (vcap_set_control(vd_, info_.id, value) == -1) {
-        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
-    } else {
+    if (vcap_set_control(vd_, info_.id, value) == VCAP_ERROR)
+        throw std::runtime_error(vcap_get_error(vd_));
+    else
         emit changed();
-    }
 }
 
 void MenuControl::check() {
     vcap_control_status status;
 
-    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR) {
-        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
-        return;
-    }
+    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR)
+        throw std::runtime_error(vcap_get_error(vd_));
 
     bool enabled = comboBox_.isEnabled();
 
@@ -67,13 +64,15 @@ void MenuControl::check() {
 void MenuControl::update() {
     int32_t value;
 
-    if (vcap_get_control(vd_, info_.id, &value) == -1)
-        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
+    if (vcap_get_control(vd_, info_.id, &value) == VCAP_ERROR)
+        throw std::runtime_error(vcap_get_error(vd_));
 
     int index = 0;
 
-    for (int i = 0; i < comboBox_.count(); i++) {
-        if (comboBox_.itemData(i).toUInt() == value) {
+    for (int i = 0; i < comboBox_.count(); i++)
+    {
+        if (comboBox_.itemData(i).toUInt() == value)
+        {
             index = i;
             break;
         }

@@ -18,9 +18,8 @@ ControlWrapper::ControlWrapper(vcap_device* vd, vcap_control_info info) : QObjec
 }
 
 void ControlWrapper::setValue(int value) {
-    if (vcap_set_control(vd_, info_.id, value) == -1) {
-        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
-    } else {
+    if (vcap_set_control(vd_, info_.id, value) == VCAP_ERROR)
+        throw std::runtime_error(vcap_get_error(vd_));
+    else
         emit changed();
-    }
 }

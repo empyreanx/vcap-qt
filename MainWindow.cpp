@@ -353,12 +353,14 @@ void MainWindow::controlChanged() {
 }
 
 void MainWindow::removeControls() {
+    // WARNING: The following constant may change if additional widgets are added to controlsForm
+    const static int lastIndex = 14;
+
     controls_.resize(0);
 
     QLayoutItem* item = nullptr;
 
-    // WARNING: The following constant may change if additional widgets are added to controlsForm
-    while ((item = ui->controlsForm->itemAt(14)) != nullptr) {
+    while ((item = ui->controlsForm->itemAt(lastIndex)) != nullptr) {
         if (item->widget()) {
             delete item->widget();
         }
@@ -402,7 +404,9 @@ void MainWindow::removeFrameSizes() {
 
 void MainWindow::updateFrameSize() {
     vcap_format_id id;
-    vcap_get_format(vd_, &id, &frameSize_);
+
+    if (vcap_get_format(vd_, &id, &frameSize_) != VCAP_OK)
+        throw std::runtime_error(vcap_get_error(vd_));
 
     QString sizeStr = QString::number(frameSize_.width) + "x" + QString::number(frameSize_.height);
 
@@ -437,7 +441,9 @@ void MainWindow::removeFrameRates() {
 }
 
 void MainWindow::updateFrameRate() {
-    vcap_get_rate(vd_, &frameRate_);
+    if (vcap_get_rate(vd_, &frameRate_))
+        throw std::runtime_error(vcap_get_error(vd_));
+
     QString frameRateStr = QString::number(frameRate_.numerator) + "/" + QString::number(frameRate_.denominator);
 
     for (int i = 0; i < ui->sizeComboBox->count(); i++) {

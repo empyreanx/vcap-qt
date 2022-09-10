@@ -20,20 +20,17 @@ BooleanControl::BooleanControl(vcap_device* vd, vcap_control_info info) : Contro
 }
 
 void BooleanControl::setValue(bool value) {
-    if (vcap_set_control(vd_, info_.id, value ? 1 : 0) == -1) {
-        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
-    } else {
+    if (vcap_set_control(vd_, info_.id, value) == VCAP_ERROR)
+        throw std::runtime_error(vcap_get_error(vd_));
+    else
         emit changed();
-    }
 }
 
 void BooleanControl::check() {
     vcap_control_status status;
 
-    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR) {
-        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
-        return;
-    }
+    if (vcap_get_control_status(vd_, info_.id, &status) == VCAP_ERROR)
+        throw std::runtime_error(vcap_get_error(vd_));
 
     bool enabled = checkBox_.isEnabled();
 
@@ -50,11 +47,8 @@ void BooleanControl::check() {
 void BooleanControl::update() {
     int32_t value;
 
-    if (vcap_get_control(vd_, info_.id, &value) == -1)
-    {
-        std::cout << std::string(vcap_get_error(vd_)) << std::endl;
-        return;
-    }
+    if (vcap_get_control(vd_, info_.id, &value) == VCAP_ERROR)
+        throw std::runtime_error(vcap_get_error(vd_));
 
     checkBox_.blockSignals(true);
     checkBox_.setChecked(!!value);
