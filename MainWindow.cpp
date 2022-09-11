@@ -17,6 +17,8 @@
 
 #include <vcap.h>
 
+#include "Iterator.hpp"
+
 #include <QFileDialog>
 #include <QTimerEvent>
 
@@ -26,7 +28,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     addDevices();
 
-    vd_ = vcap_create_device(devices_[0].path, true, 3);
+    uint32_t buffer_count = devices_[0].streaming ? 3 : 0;
+    vd_ = vcap_create_device(devices_[0].path, true, buffer_count);
 
     if (!vd_)
         throw std::runtime_error( "Unable to create video device");
@@ -65,12 +68,10 @@ void MainWindow::startCapture() {
         if (vcap_open(vd_) == VCAP_ERROR)
             throw std::runtime_error(vcap_get_error(vd_));
 
-        vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
+        IteratorPtr itr(vcap_size_iterator(vd_, VCAP_FMT_RGB24));
 
-        if (!vcap_next_size(itr, &frameSize_))
+        if (!vcap_next_size(itr.get(), &frameSize_))
             throw std::runtime_error(std::string("Unable to get initial size: ") + vcap_get_error(vd_));
-
-        vcap_free_iterator(itr);
 
         if (vcap_set_format(vd_, VCAP_FMT_RGB24, frameSize_) != VCAP_OK)
             throw std::runtime_error(vcap_get_error(vd_));
@@ -328,9 +329,9 @@ void MainWindow::addDevices()
 void MainWindow::addControls()
 {
     vcap_control_info info;
-    vcap_iterator* itr = vcap_control_iterator(vd_);
+    IteratorPtr itr(vcap_control_iterator(vd_));
 
-    while (vcap_next_control(itr, &info))
+    while (vcap_next_control(itr.get(), &info))
     {
         switch (info.type) {
         case VCAP_CTRL_TYPE_BOOLEAN:
@@ -361,10 +362,8 @@ void MainWindow::addControls()
         connect(controls_.back().get(), SIGNAL(changed()), this, SLOT(controlChanged()));
     }
 
-    if (vcap_iterator_error(itr))
+    if (vcap_iterator_error(itr.get()))
         throw std::runtime_error(vcap_get_error(vd_));
-
-    vcap_free_iterator(itr);
 
     checkControls();
 }
@@ -408,18 +407,16 @@ void MainWindow::updateControls() {
 void MainWindow::addFrameSizes()
 {
     vcap_size size;
-    vcap_iterator* itr = vcap_size_iterator(vd_, VCAP_FMT_RGB24);
+    IteratorPtr itr(vcap_size_iterator(vd_, VCAP_FMT_RGB24));
 
-    while (vcap_next_size(itr, &size))
+    while (vcap_next_size(itr.get(), &size))
     {
         QString sizeStr = QString::number(size.width) + "x" + QString::number(size.height);
         ui->sizeComboBox->addItem(sizeStr);
     }
 
-    if (vcap_iterator_error(itr))
+    if (vcap_iterator_error(itr.get()))
         throw std::runtime_error(vcap_get_error(vd_));
-
-    vcap_free_iterator(itr);
 
     updateFrameSize();
 }
@@ -454,16 +451,14 @@ void MainWindow::updateFrameSize()
 void MainWindow::addFrameRates()
 {
     vcap_rate rate;
-    vcap_iterator* itr = vcap_rate_iterator(vd_, VCAP_FMT_RGB24, frameSize_);
+    IteratorPtr itr(vcap_rate_iterator(vd_, VCAP_FMT_RGB24, frameSize_));
 
-    while (vcap_next_rate(itr, &rate)) {
+    while (vcap_next_rate(itr.get(), &rate)) {
         ui->frameRateComboBox->addItem(QString::number(rate.numerator) + "/" + QString::number(rate.denominator));
     }
 
-    if (vcap_iterator_error(itr))
-        QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
-
-    vcap_free_iterator(itr);
+    if (vcap_iterator_error(itr.get()))
+        throw std::runtime_error(vcap_get_error(vd_));
 
     updateFrameRate();
 }

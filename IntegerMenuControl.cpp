@@ -13,6 +13,7 @@
 */
 
 #include "IntegerMenuControl.hpp"
+#include "Iterator.hpp"
 
 #include <QDebug>
 #include "Utils.hpp"
@@ -20,13 +21,15 @@
 IntegerMenuControl::IntegerMenuControl(vcap_device *vd, vcap_control_info info) : ControlWrapper(vd, info)
 {
     vcap_menu_item item;
-    vcap_iterator* itr = vcap_menu_iterator(vd, info.id);
+    IteratorPtr itr(vcap_menu_iterator(vd, info.id));
 
-    while (vcap_next_menu_item(itr, &item)) {
+    while (vcap_next_menu_item(itr.get(), &item))
+    {
         comboBox_.addItem(QString::number(item.label.num));
     }
 
-    vcap_free_iterator(itr);
+    if (vcap_iterator_error(itr.get()))
+        throw std::runtime_error(vcap_get_error(vd_));
 
     update();
 

@@ -16,17 +16,20 @@
 
 #include <QDebug>
 
-#include "IteratorDeleter.hpp"
+#include "Iterator.hpp"
 #include "Utils.hpp"
 
 MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapper(vd, info)
 {
     vcap_menu_item item;
 
-    std::unique_ptr<vcap_iterator, IteratorDeleter> itr(vcap_menu_iterator(vd, info.id));
+   IteratorPtr itr(vcap_menu_iterator(vd, info.id));
 
     while (vcap_next_menu_item(itr.get(), &item))
         comboBox_.addItem(reinterpret_cast<char*>(item.label.str), item.index);
+
+    if (vcap_iterator_error(itr.get()))
+        throw std::runtime_error(vcap_get_error(vd_));
 
     update();
 
