@@ -333,29 +333,30 @@ void MainWindow::addControls()
 
     while (vcap_next_control(itr.get(), &info))
     {
-        switch (info.type) {
-        case VCAP_CTRL_TYPE_BOOLEAN:
-            controls_.emplace_back(new BooleanControl(vd_, info));
-            break;
+        switch (info.type)
+        {
+            case VCAP_CTRL_TYPE_BOOLEAN:
+                controls_.emplace_back(new BooleanControl(vd_, info));
+                break;
 
-        case VCAP_CTRL_TYPE_INTEGER:
-            controls_.emplace_back(new IntegerControl(vd_, info));
-            break;
+            case VCAP_CTRL_TYPE_INTEGER:
+                controls_.emplace_back(new IntegerControl(vd_, info));
+                break;
 
-        case VCAP_CTRL_TYPE_MENU:
-            controls_.emplace_back(new MenuControl(vd_, info));
-            break;
+            case VCAP_CTRL_TYPE_MENU:
+                controls_.emplace_back(new MenuControl(vd_, info));
+                break;
 
-        case VCAP_CTRL_TYPE_BUTTON:
-            controls_.emplace_back(new ButtonControl(vd_, info));
-            break;
+            case VCAP_CTRL_TYPE_BUTTON:
+                controls_.emplace_back(new ButtonControl(vd_, info));
+                break;
 
-        case VCAP_CTRL_TYPE_INTEGER_MENU:
-            controls_.emplace_back(new IntegerMenuControl(vd_, info));
-            break;
+            case VCAP_CTRL_TYPE_INTEGER_MENU:
+                controls_.emplace_back(new IntegerMenuControl(vd_, info));
+                break;
 
-        default:
-            continue;
+            default:
+                continue;
         }
 
         ui->controlsForm->addRow(reinterpret_cast<char*>(info.name), controls_.back()->widget());
@@ -386,9 +387,7 @@ void MainWindow::removeControls()
     while ((item = ui->controlsForm->itemAt(lastIndex)) != nullptr)
     {
         if (item->widget())
-        {
             delete item->widget();
-        }
     }
 }
 
@@ -453,9 +452,8 @@ void MainWindow::addFrameRates()
     vcap_rate rate;
     IteratorPtr itr(vcap_rate_iterator(vd_, VCAP_FMT_RGB24, frameSize_));
 
-    while (vcap_next_rate(itr.get(), &rate)) {
+    while (vcap_next_rate(itr.get(), &rate))
         ui->frameRateComboBox->addItem(QString::number(rate.numerator) + "/" + QString::number(rate.denominator));
-    }
 
     if (vcap_iterator_error(itr.get()))
         throw std::runtime_error(vcap_get_error(vd_));
@@ -466,9 +464,7 @@ void MainWindow::addFrameRates()
 void MainWindow::removeFrameRates()
 {
     while (ui->frameRateComboBox->count() > 0)
-    {
         ui->frameRateComboBox->removeItem(0);
-    }
 }
 
 void MainWindow::updateFrameRate()
