@@ -2,6 +2,8 @@
 
 #include <QMessageBox>
 
+#include <iostream>
+
 Application::Application(int& argc, char* argv[]) :  QApplication(argc, argv)
 {
 }
@@ -10,12 +12,12 @@ bool Application::notify(QObject* receiver, QEvent* event)
 {
     try
     {
-       return QApplication::notify(receiver, event);
+        return QApplication::notify(receiver, event);
     }
     catch(...)
     {
-       exceptionPtr = std::current_exception();
-       exit();
+        exceptionPtr = std::current_exception();
+        exit();
     }
 
     return false;
@@ -28,13 +30,20 @@ int Application::run()
         int code = exec();
 
         if (exceptionPtr)
+        {
             std::rethrow_exception(exceptionPtr);
+        }
 
         return code;
     }
     catch (std::exception& e)
     {
         displayError(e.what());
+        return 1;
+    }
+    catch (...)
+    {
+        displayError("Unknown Exception");
         return 1;
     }
 }

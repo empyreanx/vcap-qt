@@ -97,7 +97,9 @@ void MainWindow::stopCapture()
 {
     if (capturing_) {
         capturing_ = false;
-        killTimer(captureTimer_);
+
+        if (captureTimer_ != 0)
+            killTimer(captureTimer_);
 
         delete [] image_;
         vcap_close(vd_);
@@ -157,9 +159,8 @@ void MainWindow::quit() {
 
 void MainWindow::resetControls()
 {
-    if (vcap_reset_all_controls(vd_) == -1) {
-        QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
-    }
+    if (vcap_reset_all_controls(vd_) == VCAP_ERROR)
+        throw std::runtime_error(vcap_get_error(vd_));
 
     //checkControls();
     updateControls();
@@ -171,8 +172,10 @@ void MainWindow::snapshot() {
         snapshotTimer_ = startTimer(ui->delaySpinBox->value() * 1000);
 }
 
-void MainWindow::timerEvent(QTimerEvent* event) {
-    if (capturing_) {
+void MainWindow::timerEvent(QTimerEvent* event)
+{
+    if (capturing_)
+    {
         double delta = stopwatch_.stop();
         avgDelta_ = 0.25 * delta + 0.75 * avgDelta_;
         stopwatch_.start();
@@ -182,12 +185,15 @@ void MainWindow::timerEvent(QTimerEvent* event) {
         else
             statusBar_.showMessage("FPS: 0.0");
 
-        if (vcap_capture(vd_, imageSize_, image_) == -1) {
-            stopCapture();
+        if (vcap_capture(vd_, imageSize_, image_) == VCAP_ERROR)
+        {
+            killTimer(captureTimer_);
+            captureTimer_ = 0;
             throw std::runtime_error(vcap_get_error(vd_));
         }
 
-        if (event->timerId() == snapshotTimer_) {
+        if (event->timerId() == snapshotTimer_)
+        {
             killTimer(snapshotTimer_);
 
             QString fileName = QFileDialog::getSaveFileName(this,
@@ -256,7 +262,7 @@ void MainWindow::switchSize(const QString &sizeStr)
         uint32_t height = parts[1].toUInt();
         vcap_size size = { width, height };
 
-        if (vcap_set_format(vd_, VCAP_FMT_RGB24, size) == -1)
+        if (vcap_set_format(vd_, VCAP_FMT_RGB24, size) != VCAP_OK)
             throw std::runtime_error(vcap_get_error(vd_));
 
         frameSize_ = size;
@@ -275,7 +281,8 @@ void MainWindow::switchSize(const QString &sizeStr)
 
 void MainWindow::switchRate(const QString &rateStr)
 {
-    if (capturing_) {
+    if (capturing_)
+    {
         capturing_ = false;
         killTimer(captureTimer_);
 
@@ -286,7 +293,7 @@ void MainWindow::switchRate(const QString &rateStr)
 
         vcap_rate rate = { numerator, denominator };
 
-        if (vcap_set_rate(vd_, rate) == -1)
+        if (vcap_set_rate(vd_, rate) != VCAP_OK)
             throw std::runtime_error(vcap_get_error(vd_));
 
         frameRate_ = rate;
@@ -469,7 +476,8 @@ void MainWindow::removeFrameRates()
     }
 }
 
-void MainWindow::updateFrameRate() {
+void MainWindow::updateFrameRate()
+{
     if (vcap_get_rate(vd_, &frameRate_))
         throw std::runtime_error(vcap_get_error(vd_));
 

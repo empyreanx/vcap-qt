@@ -20,6 +20,7 @@
 int main(int argc, char *argv[])
 {
     Application a(argc, argv);
+    //QApplication a(argc, argv);
 
     int code = 0;
 
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
         w.show();
 
         code = a.run();
+        //code = a.exec();
     }
     catch (const std::exception& e)
     {
