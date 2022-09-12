@@ -15,7 +15,7 @@ public:
     void displayError(std::string msg);
 
 private:
-    std::exception_ptr exceptionPtr = nullptr;
+    std::exception_ptr exceptionPtr_ = nullptr;
 };
 
 #endif // APPLICATION_HPP

@@ -16,7 +16,7 @@ bool Application::notify(QObject* receiver, QEvent* event)
     }
     catch(...)
     {
-        exceptionPtr = std::current_exception();
+        exceptionPtr_ = std::current_exception();
         exit();
     }
 
@@ -25,17 +25,17 @@ bool Application::notify(QObject* receiver, QEvent* event)
 
 int Application::run()
 {
-    try
-    {
+    //try
+    //{
         int code = exec();
 
-        if (exceptionPtr)
+        if (exceptionPtr_)
         {
-            std::rethrow_exception(exceptionPtr);
+            std::rethrow_exception(exceptionPtr_);
         }
 
         return code;
-    }
+    /*}
     catch (std::exception& e)
     {
         displayError(e.what());
@@ -45,7 +45,7 @@ int Application::run()
     {
         displayError("Unknown Exception");
         return 1;
-    }
+    }*/
 }
 
 void Application::displayError(std::string msg)

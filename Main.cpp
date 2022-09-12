@@ -30,11 +30,15 @@ int main(int argc, char *argv[])
         w.show();
 
         code = a.run();
-        //code = a.exec();
     }
     catch (const std::exception& e)
     {
         QMessageBox::critical(0, "Error", e.what());
+        return EXIT_FAILURE;
+    }
+    catch (...)
+    {
+        QMessageBox::critical(0, "Error", "Unknown exception");
         return EXIT_FAILURE;
     }
 
