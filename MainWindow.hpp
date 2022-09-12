@@ -98,14 +98,14 @@ private:
 
     QStatusBar statusBar_;
 
-    Stopwatch stopwatch_;
-    double avgDelta_;
+    bool capturing_;
+    vcap_device* vd_;
 
     int captureTimer_;
     int snapshotTimer_;
 
-    bool capturing_;
-    vcap_device* vd_;
+    Stopwatch stopwatch_;
+    double avgDelta_;
 
     size_t imageSize_;
     uint8_t* image_;

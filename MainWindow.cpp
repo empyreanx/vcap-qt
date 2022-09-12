@@ -25,7 +25,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), capturing_(false), vd_(nullptr)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow),
+    capturing_(false), vd_(nullptr), captureTimer_(0), snapshotTimer_(0), avgDelta_(0.0)
 {
     ui->setupUi(this);
 
@@ -492,13 +493,17 @@ void MainWindow::snapshot(uint8_t imageData[], size_t imageSize)
                                                     nullptr,
                                                     QFileDialog::DontUseNativeDialog);
 
-    if (!fileName.isNull()) {
-        if (ui->formatComboBox->currentText() == "PNG") {
+    if (!fileName.isNull())
+    {
+        if (ui->formatComboBox->currentText() == "PNG")
+        {
 
-            if (!stbi_write_png(fileName.toStdString().c_str(), frameSize_.width, frameSize_.height, 3, imageData, 3 * frameSize_.width))
+            if (0 == stbi_write_png(fileName.toStdString().c_str(), frameSize_.width, frameSize_.height, 3, imageData, 3 * frameSize_.width))
                 throw std::runtime_error("Unable to save PNG");
-        } else {
-            if (!stbi_write_jpg(fileName.toStdString().c_str(), frameSize_.width, frameSize_.height, 3, imageData, 50))
+        }
+        else
+        {
+            if (0 == stbi_write_jpg(fileName.toStdString().c_str(), frameSize_.width, frameSize_.height, 3, imageData, 50))
                 throw std::runtime_error("Unable to save JPG");
         }
     }
