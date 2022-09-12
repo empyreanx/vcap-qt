@@ -497,14 +497,9 @@ void MainWindow::snapshot(uint8_t imageData[], size_t imageSize)
 
             if (!stbi_write_png(fileName.toStdString().c_str(), frameSize_.width, frameSize_.height, 3, imageData, 3 * frameSize_.width))
                 throw std::runtime_error("Unable to save PNG");
-
-            /*if (vcap_save_png(clone_, fileName.toLatin1().data()) == -1) {
-                QMessageBox::warning(this, tr("Error"), QString("Unable to save PNG: ") + vcap_get_error(vd_));
-            }*/
         } else {
-            /*if (vcap_save_jpeg(clone_, fileName.toLatin1().data()) == -1) {
-                QMessageBox::warning(this, tr("Error"), QString("Unable to save JPEG: ") + vcap_get_error(vd_));
-            }*/
+            if (!stbi_write_jpg(fileName.toStdString().c_str(), frameSize_.width, frameSize_.height, 3, imageData, 50))
+                throw std::runtime_error("Unable to save JPG");
         }
     }
 }
