@@ -88,6 +88,8 @@ private:
     double calcAvgDelta(double delta);
     void displayAvgDelta(double avgDelta);
 
+    void snapshot(uint8_t imageData[], size_t imageSize);
+
 protected:
     void timerEvent(QTimerEvent* event);
 

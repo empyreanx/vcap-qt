@@ -22,6 +22,9 @@
 #include <QFileDialog>
 #include <QTimerEvent>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), capturing_(false), vd_(nullptr)
 {
     ui->setupUi(this);
@@ -195,25 +198,9 @@ void MainWindow::timerEvent(QTimerEvent* event)
         if (event->timerId() == snapshotTimer_)
         {
             killTimer(snapshotTimer_);
+            snapshotTimer_ = 0;
 
-            QString fileName = QFileDialog::getSaveFileName(this,
-                                                            "Save Image",
-                                                            QDir::currentPath(),
-                                                            "Images (*.png *.jpg)",
-                                                            nullptr,
-                                                            QFileDialog::DontUseNativeDialog);
-
-            /*if (!fileName.isNull()) {
-                if (ui->formatComboBox->currentText() == "PNG") {
-                    if (vcap_save_png(clone_, fileName.toLatin1().data()) == -1) {
-                        QMessageBox::warning(this, tr("Error"), QString("Unable to save PNG: ") + vcap_get_error(vd_));
-                    }
-                } else {
-                    if (vcap_save_jpeg(clone_, fileName.toLatin1().data()) == -1) {
-                        QMessageBox::warning(this, tr("Error"), QString("Unable to save JPEG: ") + vcap_get_error(vd_));
-                    }
-                }
-            }*/
+            snapshot(image_, imageSize_);
         }
     }
 }
@@ -494,6 +481,34 @@ void MainWindow::displayAvgDelta(double avgDelta)
     else
         statusBar_.showMessage("FPS: 0.0");
 }
+
+void MainWindow::snapshot(uint8_t imageData[], size_t imageSize)
+{
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    "Save Image",
+                                                    QDir::currentPath(),
+                                                    "Images (*.png *.jpg)",
+                                                    nullptr,
+                                                    QFileDialog::DontUseNativeDialog);
+
+    if (!fileName.isNull()) {
+        if (ui->formatComboBox->currentText() == "PNG") {
+
+            if (!stbi_write_png(fileName.toStdString().c_str(), frameSize_.width, frameSize_.height, 3, imageData, 3 * frameSize_.width))
+                throw std::runtime_error("Unable to save PNG");
+
+            /*if (vcap_save_png(clone_, fileName.toLatin1().data()) == -1) {
+                QMessageBox::warning(this, tr("Error"), QString("Unable to save PNG: ") + vcap_get_error(vd_));
+            }*/
+        } else {
+            /*if (vcap_save_jpeg(clone_, fileName.toLatin1().data()) == -1) {
+                QMessageBox::warning(this, tr("Error"), QString("Unable to save JPEG: ") + vcap_get_error(vd_));
+            }*/
+        }
+    }
+}
+
 
 void MainWindow::displayImage(int width, int height, std::uint8_t* data)
 {
