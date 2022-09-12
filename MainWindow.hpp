@@ -85,6 +85,9 @@ private:
     void removeFrameRates();
     void updateFrameRate();
 
+    double calcAvgDelta(double delta);
+    void displayAvgDelta(double avgDelta);
+
 protected:
     void timerEvent(QTimerEvent* event);
 

@@ -178,13 +178,10 @@ void MainWindow::timerEvent(QTimerEvent* event)
     if (capturing_)
     {
         double delta = stopwatch_.stop();
-        avgDelta_ = 0.25 * delta + 0.75 * avgDelta_;
+        double avgDelta = calcAvgDelta(delta);
         stopwatch_.start();
 
-        if (avgDelta_ > 0.0)
-            statusBar_.showMessage(QString("FPS: ") + QString::number(1.0 / avgDelta_));
-        else
-            statusBar_.showMessage("FPS: 0.0");
+        displayAvgDelta(avgDelta);
 
         if (vcap_capture(vd_, imageSize_, image_) == VCAP_ERROR)
         {
@@ -192,6 +189,8 @@ void MainWindow::timerEvent(QTimerEvent* event)
             captureTimer_ = 0;
             throw std::runtime_error(vcap_get_error(vd_));
         }
+
+        displayImage(static_cast<int>(frameSize_.width), static_cast<int>(frameSize_.height), image_);
 
         if (event->timerId() == snapshotTimer_)
         {
@@ -215,8 +214,6 @@ void MainWindow::timerEvent(QTimerEvent* event)
                     }
                 }
             }*/
-        } else {
-            displayImage(static_cast<int>(frameSize_.width), static_cast<int>(frameSize_.height), image_);
         }
     }
 }
@@ -482,6 +479,20 @@ void MainWindow::updateFrameRate()
             break;
         }
     }
+}
+
+double MainWindow::calcAvgDelta(double delta)
+{
+    avgDelta_ = 0.25 * delta + 0.75 * avgDelta_;
+    return avgDelta_;
+}
+
+void MainWindow::displayAvgDelta(double avgDelta)
+{
+    if (avgDelta > 0.0)
+        statusBar_.showMessage(QString("FPS: ") + QString::number(1.0 / avgDelta));
+    else
+        statusBar_.showMessage("FPS: 0.0");
 }
 
 void MainWindow::displayImage(int width, int height, std::uint8_t* data)
