@@ -4,5 +4,5 @@
 A demo of [Vcap](https://github.com/empyreanx/vcap) written in C++11/Qt5.
 
 ## License
-Copyright (c) 2022 James McLean
+Copyright (c) 2022 James McLean <br>
 Licensed under the MIT License
