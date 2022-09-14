@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #ifndef STOPWATCH_H
 #define STOPWATCH_H
 

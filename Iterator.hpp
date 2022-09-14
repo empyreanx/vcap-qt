@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #ifndef ITERATOR_HPP
 #define ITERATOR_HPP
 

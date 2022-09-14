@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "Application.hpp"
 
 #include <QMessageBox>

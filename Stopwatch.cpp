@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #include "Stopwatch.hpp"
 
 #define PICO_TIME_IMPLEMENTATION

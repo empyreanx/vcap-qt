@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #ifndef ITERATOR_DELETER_HPP
 #define ITERATOR_DELETER_HPP
 
