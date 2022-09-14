@@ -5,7 +5,7 @@
 #include <QDebug>
 
 #include "Iterator.hpp"
-#include "Utils.hpp"
+#include "Utility.hpp"
 
 MenuControl::MenuControl(vcap_device* vd, vcap_control_info info) : ControlWrapper(vd, info)
 {

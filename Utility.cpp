@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-#include "Utils.hpp"
+#include "Utility.hpp"
 
 QImage colorToQImage(int width, int height, std::uint8_t* data)
 {

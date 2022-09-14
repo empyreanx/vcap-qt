@@ -8,7 +8,7 @@
 
 #include "ControlWrapper.hpp"
 #include "MainWindow.hpp"
-#include "Utils.hpp"
+#include "Utility.hpp"
 
 class MainWindow;
 

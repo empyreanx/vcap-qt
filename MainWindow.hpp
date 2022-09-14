@@ -25,7 +25,7 @@
 #include "IntegerMenuControl.hpp"
 #include "Stopwatch.hpp"
 
-#include "Utils.hpp"
+#include "Utility.hpp"
 
 namespace Ui
 {

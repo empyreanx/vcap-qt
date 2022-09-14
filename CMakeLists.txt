@@ -25,8 +25,8 @@ add_executable(vcap-qt
     Main.cpp
     Application.cpp
     Application.hpp
-    Utils.hpp
-    Utils.cpp
+    Utility.hpp
+    Utility.cpp
     IteratorDeleter.cpp
     IteratorDeleter.hpp
     ControlWrapper.hpp
