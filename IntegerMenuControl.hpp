@@ -7,7 +7,6 @@
 #include <QComboBox>
 
 #include "ControlWrapper.hpp"
-#include "Utility.hpp"
 
 class IntegerMenuControl : public ControlWrapper
 {
