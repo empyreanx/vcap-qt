@@ -4,7 +4,6 @@
 #include "Iterator.hpp"
 
 #include <QDebug>
-#include "Utility.hpp"
 
 IntegerMenuControl::IntegerMenuControl(vcap_device *vd, vcap_control_info info) : ControlWrapper(vd, info)
 {
