@@ -11,10 +11,10 @@
 #include <QTimerEvent>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "libs/stb_image_write.h"
 
 #define VCAP_SETTINGS_IMPLEMENTATION
-#include "vcap_settings.h"
+#include "libs/vcap_settings.h"
 
 #include <fstream>
 #include <iostream>
