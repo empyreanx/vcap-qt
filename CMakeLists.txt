@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.1.0)
 
 project(vcap-qt VERSION 1.0.0 LANGUAGES CXX)
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
 #set(CXX "g++")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -46,7 +48,28 @@ add_executable(vcap-qt
     Stopwatch.cpp
 )
 
-target_include_directories(vcap-qt PUBLIC /usr/local/include)
-target_link_libraries(vcap-qt v4l2 vcap)
+# Find V4L2
+find_package(V4L2 REQUIRED)
 
-target_link_libraries(vcap-qt Qt5::Widgets)
+if(NOT V4L2_FOUND)
+    message(FATAL_ERROR "V4L2 not found!")
+endif()
+
+# Find JANSSON
+find_package(Jansson REQUIRED)
+
+if(NOT JANSSON_FOUND)
+    message(FATAL_ERROR "Jansson not found!")
+endif()
+
+# Find JANSSON
+find_package(Vcap REQUIRED)
+
+if(NOT VCAP_FOUND)
+    message(FATAL_ERROR "VCAP not found!")
+endif()
+
+target_include_directories(vcap-qt PUBLIC ${V4L2_INCLUDE_DIR} ${JANSSON_INCLUDE_DIR} ${VCAP_INCLUDE_DIR} )
+target_link_libraries(vcap-qt ${VCAP_LIBRARY} ${V4L2_LIBRARIES} ${JANSSON_LIBRARY}  Qt5::Widgets)
+
+#target_link_libraries(vcap-qt Qt5::Widgets)

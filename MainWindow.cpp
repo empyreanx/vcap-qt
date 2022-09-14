@@ -142,6 +142,7 @@ void MainWindow::importSettings()
                 std::ostringstream sstream;
                 sstream << fileIn.rdbuf();
                 json_str = sstream.str();
+                fileIn.close();
 
                 if (vcap_import_settings(vd_, json_str.c_str()) == VCAP_ERROR)
                     throw std::runtime_error(vcap_get_error(vd_));
@@ -159,18 +160,26 @@ void MainWindow::exportSettings()
 {
     if (capturing_)
     {
-        /*QString fileName = QFileDialog::getSaveFileName(this,
+        QString fileName = QFileDialog::getSaveFileName(this,
                                                         "Export Settings",
                                                         QDir::currentPath() + "/settings.json",
                                                         "JSON (*.json)",
                                                         nullptr,
                                                         QFileDialog::DontUseNativeDialog);
 
-        if (!fileName.isNull()) {
-            if (vcap_export_settings(vd_, fileName.toLatin1().data()) == -1) {
-                QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
-            }
-        }*/
+        if (!fileName.isNull())
+        {
+            char* json_str = nullptr;
+
+            if (vcap_export_settings(vd_, &json_str) == VCAP_ERROR)
+                throw std::runtime_error(vcap_get_error(vd_));
+
+            std::ofstream fileOut(fileName.toStdString());
+            fileOut << json_str;
+            fileOut.close();
+
+            free(json_str);
+        }
     }
 }
 
