@@ -25,8 +25,15 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#define VCAP_SETTINGS_IMPLEMENTATION
+#include "vcap_settings.h"
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow),
-    capturing_(false), vd_(nullptr), captureTimer_(0), snapshotTimer_(0), avgDelta_(0.0)
+    vd_(nullptr), capturing_(false), captureTimer_(0), snapshotTimer_(0), avgDelta_(0.0)
 {
     ui->setupUi(this);
 
@@ -119,22 +126,32 @@ void MainWindow::importSettings()
 {
     if (capturing_)
     {
-        /*QString fileName = QFileDialog::getOpenFileName(this,
+        QString fileName = QFileDialog::getOpenFileName(this,
                                                         "Import Settings",
                                                         QDir::currentPath(),
                                                         "JSON (*.json)",
                                                         nullptr,
                                                         QFileDialog::DontUseNativeDialog);
-        if (!fileName.isNull()) {
-            if (vcap_import_settings(vd_, fileName.toLatin1().data()) == -1) {
-                QMessageBox::warning(this, tr("Error"), vcap_get_error(vd_));
-            } else {
+        if (!fileName.isNull())
+        {
+            std::ifstream fileIn(fileName.toStdString());
+            std::string json_str;
+
+            if (fileIn)
+            {
+                std::ostringstream sstream;
+                sstream << fileIn.rdbuf();
+                json_str = sstream.str();
+
+                if (vcap_import_settings(vd_, json_str.c_str()) == VCAP_ERROR)
+                    throw std::runtime_error(vcap_get_error(vd_));
+
                 updateControls();
                 updateFrameSize();
                 updateFrameRate();
                 checkControls();
             }
-        }*/
+        }
     }
 }
 
@@ -200,7 +217,6 @@ void MainWindow::timerEvent(QTimerEvent* event)
         {
             killTimer(snapshotTimer_);
             snapshotTimer_ = 0;
-
             snapshot(image_, imageSize_);
         }
     }

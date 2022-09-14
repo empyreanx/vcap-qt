@@ -98,9 +98,9 @@ private:
 
     QStatusBar statusBar_;
 
-    bool capturing_;
     vcap_device* vd_;
 
+    bool capturing_;
     int captureTimer_;
     int snapshotTimer_;
 
