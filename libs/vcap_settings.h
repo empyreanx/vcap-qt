@@ -1,3 +1,54 @@
+//==============================================================================
+// MIT License
+//
+// Copyright 2022 James McLean
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//==============================================================================
+
+/**
+    \file vcap_settings.h
+    \brief Settings import/export for Vcap
+
+    Summary:
+    --------
+
+    This tiny single-header library is an extension to Vcap that allows camera
+    settings to be exported/imported, to/from JSON. This benefits applications
+    that to need to preserve camera state for various reasons.
+
+    Usage:
+    ------
+
+    The additional required dependency is Jansson, which can be installed as
+    follows:
+
+    > sudo apt install libjansson-dev
+
+    To use this library in your project, add the following
+
+    > #define VCAP_SETTINGS_IMPLEMENTATION
+    > #include "vcap_settings.h"
+
+    to a source file (once), then simply include the header normally.
+*/
+
 #ifndef VCAP_SETTINGS_H
 #define VCAP_SETTINGS_H
 
@@ -7,8 +58,38 @@
 extern "C" {
 #endif
 
-int vcap_import_settings(vcap_device* vd, const char* json);
-int vcap_export_settings(vcap_device* vd, char** json);
+//------------------------------------------------------------------------------
+///
+/// \brief Imports camera settings from JSON
+///
+/// The is function will parse the JSON string, extract the camera settings, and
+/// write those settings to the device.
+///
+/// \param vd        The video capture device
+/// \param json_str  The JSON encoded camera settings
+///
+/// \returns VCAP_OK     if the settings were successfully imported
+///          VCAP_ERROR  if there was an error.
+///
+int vcap_import_settings(vcap_device* vd, const char* json_str);
+
+//------------------------------------------------------------------------------
+///
+/// \brief Exports camera settings to JSON
+///
+// This function will read the setting from a camera and serialize them as JSON.
+///
+/// \param vd        The video capture device
+/// \param json_str  Pointer to a string pointer. The corresponding argument
+///                  will be allocated and set internally. This string must be
+///                  deallocated using the custom `free` function passed to Vcap
+///                  or the standard library `free()` function if a custom
+///                  allocator is not in use.
+///
+/// \returns VCAP_OK    if the settings were successfully exported
+///          VCAP_ERROR if there was an error.
+///
+int vcap_export_settings(vcap_device* vd, char** json_str);
 
 #ifdef __cplusplus
 }
@@ -19,15 +100,20 @@ int vcap_export_settings(vcap_device* vd, char** json);
 #ifdef VCAP_SETTINGS_IMPLEMENTATION
 
 #include <jansson.h>
+#include <string.h>
+
+//==============================================================================
+// Internal function declarations
+//==============================================================================
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// Provided by Vcap
 extern void* vcap_malloc(size_t size);
 extern void  vcap_free(void* ptr);
 extern void  vcap_set_error_str(const char* func, int line, vcap_device* vd, const char* fmt, ...);
-extern void  vcap_set_error_errno_str(const char* func, int line, vcap_device* vd, const char* fmt, ...);
 
 #ifdef __cplusplus
 }
@@ -36,9 +122,7 @@ extern void  vcap_set_error_errno_str(const char* func, int line, vcap_device* v
 // Set error message
 #define vcap_set_error(...) (vcap_set_error_str(__func__, __LINE__, __VA_ARGS__))
 
-// Set message with errno information
-#define vcap_set_error_errno(...) (vcap_set_error_errno_str( __func__, __LINE__,  __VA_ARGS__))
-
+// Internal functions
 static json_t* vcap_build_size(vcap_device* vd, const vcap_size size);
 static json_t* vcap_build_rate(vcap_device* vd, const vcap_rate rate);
 static json_t* vcap_build_ctrl(vcap_device* vd, const vcap_control_info* info, int32_t value);
@@ -47,9 +131,12 @@ static int vcap_parse_size(vcap_device* vd, json_t* obj, vcap_size* size);
 static int vcap_parse_rate(vcap_device* vd, json_t* obj, vcap_rate* rate);
 static int vcap_parse_ctrl(vcap_device* vd, json_t* obj, vcap_control_id* id, int32_t* value);
 
+//==============================================================================
+// Public API implementation
+//==============================================================================
+
 int vcap_import_settings(vcap_device* vd, const char* json_str)
 {
-    //TODO: Is necessary?
     if (vcap_reset_all_controls(vd) == VCAP_ERROR)
         return VCAP_ERROR;
 
@@ -262,7 +349,7 @@ int vcap_export_settings(vcap_device* vd, char** json_str)
 
     vcap_iterator* itr = vcap_control_iterator(vd);
 
-    //FIXME: check if itr is NULL
+    //TODO: check if itr is NULL
 
     vcap_control_info info;
 
@@ -338,12 +425,20 @@ int vcap_export_settings(vcap_device* vd, char** json_str)
         return VCAP_ERROR;
     }
 
-    *json_str = str;
+    size_t len = strlen(str) + 1;
+
+    *json_str = (char*)vcap_malloc(len * sizeof(char));
+    memcpy(*json_str, str, len);
+    free(str);
 
     json_decref(root);
 
     return VCAP_OK;
 }
+
+//==============================================================================
+// Parsing functions (import)
+//==============================================================================
 
 static int vcap_parse_size(vcap_device* vd, json_t* obj, vcap_size* size)
 {
@@ -416,7 +511,11 @@ static int vcap_parse_rate(vcap_device* vd, json_t* obj, vcap_rate* rate)
 
 static int vcap_parse_ctrl(vcap_device* vd, json_t* obj, vcap_control_id* id, int32_t* value)
 {
-    //TODO: validate inputs
+    if (!id || !value)
+    {
+        vcap_set_error(vd, "Argument can't be NULL");
+        return VCAP_ERROR;
+    }
 
     if (json_typeof(obj) != JSON_OBJECT)
     {
@@ -446,6 +545,10 @@ static int vcap_parse_ctrl(vcap_device* vd, json_t* obj, vcap_control_id* id, in
 
     return VCAP_OK;
 }
+
+//==============================================================================
+// Build function (export)
+//==============================================================================
 
 static json_t* vcap_build_size(vcap_device* vd, const vcap_size size)
 {
