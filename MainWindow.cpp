@@ -18,6 +18,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow),
@@ -334,23 +335,23 @@ void MainWindow::addControls()
         switch (info.type)
         {
             case VCAP_CTRL_TYPE_BOOLEAN:
-                controls_.emplace_back(new BooleanControl(vd_, info));
+                controls_.push_back(std::make_unique<BooleanControl>(vd_, info));
                 break;
 
             case VCAP_CTRL_TYPE_INTEGER:
-                controls_.emplace_back(new IntegerControl(vd_, info));
+                controls_.push_back(std::make_unique<IntegerControl>(vd_, info));
                 break;
 
             case VCAP_CTRL_TYPE_MENU:
-                controls_.emplace_back(new MenuControl(vd_, info));
+                controls_.push_back(std::make_unique<MenuControl>(vd_, info));
                 break;
 
             case VCAP_CTRL_TYPE_BUTTON:
-                controls_.emplace_back(new ButtonControl(vd_, info));
+                controls_.push_back(std::make_unique<ButtonControl>(vd_, info));
                 break;
 
             case VCAP_CTRL_TYPE_INTEGER_MENU:
-                controls_.emplace_back(new IntegerMenuControl(vd_, info));
+                controls_.push_back(std::make_unique<IntegerMenuControl>(vd_, info));
                 break;
 
             default:
